@@ -56,18 +56,19 @@ const ethans: Ethan[] = [
 export default function Home() {
   const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(null);
 
-  if (selectedEthan) {
-    return <TitleScreen ethan={selectedEthan} onBack={() => setSelectedEthan(null)} />;
-  }
-
   return (
-    <div>
-      <StageSelectionScreen 
-        ethans={ethans} 
+    <div className="relative overflow-hidden min-h-screen">
+      <StageSelectionScreen
+        ethans={ethans}
         onSelect={(ethan: Ethan) => {
           setSelectedEthan(ethan);
-        }} 
+        }}
       />
+      {selectedEthan && (
+        <div className="absolute inset-0 z-50">
+          <TitleScreen ethan={selectedEthan} onBack={() => setSelectedEthan(null)} />
+        </div>
+      )}
     </div>
   );
 }
