@@ -205,9 +205,9 @@ export default function StageSelectionScreen() {
                 alt={ethan.name}
                 width={431}
                 height={721}
-                className="h-auto w-full max-w-none absolute z-20 scale-110 translate-y-34"
+                className="h-auto w-full max-w-none absolute z-20 scale-110 translate-y-[12vh]"
               />
-              <h1 className="text-5xl absolute text-center uppercase z-20 scale-110 translate-y-33">
+              <h1 className="text-[4vh] absolute text-center uppercase z-20 scale-110 whitespace-nowrap translate-y-[11.5vh]">
                 {ethan.name}
               </h1>
             </div>
