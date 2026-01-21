@@ -4,37 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
+import type { Ethan } from "@/app/page";
 
-const ethans = [
-  {
-    id: 1,
-    name: "The Adventurer",
-    image: "/adventurer.png",
-    banner: "/adventurer-banner.png",
-    color: "#CBBEFF",
-  },
-  {
-    id: 2,
-    name: "The Artist",
-    image: "/artist.png",
-    banner: "/artist-banner.png",
-    color: "#FDE047",
-  },
-  {
-    id: 3,
-    name: "The Engineer",
-    image: "/engineer.png",
-    banner: "/engineer-banner.png",
-    color: "#4300DE",
-  },
-  {
-    id: 4,
-    name: "The Misc Dude",
-    image: "/misc-dude.png",
-    banner: "/misc-dude-banner.png",
-    color: "#FF5100",
-  },
-];
+
+
+type StageSelectionScreenProps = {
+  ethans: Ethan[];
+    onSelect: (ethan: Ethan) => void;
+};
 
 type AnimationState = {
   outgoingIndex: number | null;
@@ -43,13 +20,14 @@ type AnimationState = {
   phase: "idle" | "animating";
 };
 
-export default function StageSelectionScreen() {
+export default function StageSelectionScreen({ ethans, onSelect }: StageSelectionScreenProps) {
   const [animState, setAnimState] = useState<AnimationState>({
     outgoingIndex: null,
     incomingIndex: 0,
     direction: "right",
     phase: "idle",
   });
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentEthan = ethans[animState.incomingIndex];
@@ -60,6 +38,19 @@ export default function StageSelectionScreen() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, []);
+
+  // Detect screen size below sm breakpoint (640px)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    setIsSmallScreen(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsSmallScreen(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   // Play background music on page load
@@ -168,7 +159,7 @@ export default function StageSelectionScreen() {
 
       {/* Ethan's Character */}
       <div className="absolute top-[40%] left-1/2 -translate-x-1/2 z-20 h-[60vh] w-fit flex items-center justify-center overflow-visible">
-        {ethans.map((ethan, index) => {
+        {ethans.map((ethan: Ethan, index: number) => {
           const isOutgoing = animState.outgoingIndex === index;
           const isIncoming = animState.incomingIndex === index;
           const isAnimating = animState.phase === "animating";
@@ -184,7 +175,8 @@ export default function StageSelectionScreen() {
           return (
             <div
               key={ethan.id}
-              className="absolute flex items-center justify-center"
+              onClick={() => isIncoming && onSelect(ethan)}
+              className={`absolute flex items-center justify-center ${isIncoming ? 'cursor-pointer' : ''}`}
               style={{
                 transform: `translateX(${translateX})`,
                 transition: isAnimating ? "transform 800ms ease-out" : "none",
@@ -208,7 +200,7 @@ export default function StageSelectionScreen() {
                 className="h-auto w-full max-w-none absolute z-20 scale-110 translate-y-[12vh]"
               />
               <h1 className="text-[4vh] absolute text-center uppercase z-20 scale-110 whitespace-nowrap translate-y-[11.5vh]">
-                {ethan.name}
+                The {ethan.name}
               </h1>
             </div>
           );
@@ -219,14 +211,14 @@ export default function StageSelectionScreen() {
       {animState.incomingIndex > 0 && (
         <Arrow
           direction="left"
-          color={currentEthan.color}
+          color={isSmallScreen ? "black" : currentEthan.color}
           onClick={handlePrevious}
         />
       )}
       {animState.incomingIndex < ethans.length - 1 && (
         <Arrow
           direction="right"
-          color={currentEthan.color}
+          color={isSmallScreen ? "black" : currentEthan.color}
           onClick={handleNext}
         />
       )}

@@ -1,5 +1,5 @@
 interface ArrowProps {
-  direction: "left" | "right";
+  direction: "left" | "right" | "up";
   color: string;
   onClick: () => void;
   disabled?: boolean;
@@ -14,11 +14,18 @@ export default function Arrow({ direction, color, onClick, disabled = false }: A
     onClick();
   };
 
+  const getPositionClasses = () => {
+    if (direction === "left") return "left-4 md:left-8 top-1/2 -translate-y-1/2";
+    if (direction === "right") return "right-4 md:right-8 top-1/2 -translate-y-1/2";
+    if (direction === "up") return "top-4 md:top-8 left-1/2 -translate-x-1/2";
+    return "";
+  };
+
   return (
     <button
       onClick={handleClick}
       disabled={disabled}
-      className={`absolute z-30 ${direction === "left" ? "left-4 md:left-8" : "right-4 md:right-8"} top-1/2 -translate-y-1/2 w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-opacity ${
+      className={`absolute z-30 ${getPositionClasses()} w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-opacity ${
         disabled ? "opacity-30 cursor-not-allowed" : "opacity-100 cursor-pointer hover:opacity-80"
       }`}
       aria-label={`Navigate ${direction}`}
@@ -32,7 +39,13 @@ export default function Arrow({ direction, color, onClick, disabled = false }: A
         style={{ transition: "stroke 800ms ease-out" }}
       >
         <path
-          d={direction === "left" ? "M15 18l-6-6 6-6" : "M9 18l6-6-6-6"}
+          d={
+            direction === "left"
+              ? "M15 18l-6-6 6-6"
+              : direction === "right"
+              ? "M9 18l6-6-6-6"
+              : "M6 18l6-12 6 12"
+          }
           stroke={color}
           strokeWidth="3"
           strokeLinecap="square"
