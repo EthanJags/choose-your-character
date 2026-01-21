@@ -31,7 +31,7 @@ export default function TitleScreen({ ethan, onBack }: TitleScreenProps) {
             }}
         >
             <Arrow direction="up" color={ethan.thirdColor} onClick={handleBack} />
-            <Image src={'/cloud-long-header.png'} alt={'Clouds'} width={1939} height={592} className="absolute top-[-15%] left-1/2 -translate-x-1/2 z-0"/>
+            <Image src={'/cloud-long-header.png'} alt={'Clouds'} width={1939} height={592} className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-0 w-full"/>
             <h1 className="absolute uppercase text-center sm:text-left left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 md:mx-20 top-[15%] sm:top-[60%] sm:-translate-y-1/2 z-10" style={{ color: ethan.secondaryColor, fontSize: 'clamp(3rem, 15vw, 20rem)' }}>The <br/>{ethan.name}</h1>
             <Image src={ethan.image} alt={ethan.name} width={431} height={721} className="absolute bottom-0 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 md:right-[5%] lg:right-[10%] h-[70vh] sm:h-[80vh] md:h-[90vh] w-auto z-1" />
 

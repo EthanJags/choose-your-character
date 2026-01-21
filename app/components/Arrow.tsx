@@ -22,7 +22,7 @@ export default function Arrow({ direction, color, onClick, disabled = false }: A
     <button
       onClick={handleClick}
       disabled={disabled}
-      className={`absolute z-30 ${getPositionClasses()} w-32 h-32 md:w-40 md:h-40 lg:w-36 lg:h-48 flex items-center justify-center transition-opacity ${
+      className={`absolute z-30 ${getPositionClasses()} w-18 h-18 md:w-40 md:h-40 lg:w-36 lg:h-48 flex items-center justify-center transition-opacity ${
         disabled ? "opacity-30 cursor-not-allowed" : "opacity-100 cursor-pointer hover:opacity-80"
       }`}
       aria-label={`Navigate ${direction}`}
