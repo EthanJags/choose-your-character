@@ -7,10 +7,7 @@ interface ArrowProps {
 
 export default function Arrow({ direction, color, onClick, disabled = false }: ArrowProps) {
   const handleClick = () => {
-    const audio = new Audio("/menuselect.mov");
-    audio.currentTime = 0.15;
     if (disabled) return;
-    audio.play();
     onClick();
   };
 
@@ -44,7 +41,7 @@ export default function Arrow({ direction, color, onClick, disabled = false }: A
               ? "M15 18l-6-6 6-6"
               : direction === "right"
               ? "M9 18l6-6-6-6"
-              : "M6 18l6-12 6 12"
+              : "M18 15l-6-6-6 6"
           }
           stroke={color}
           strokeWidth="3"

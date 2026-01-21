@@ -83,8 +83,12 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     if (animState.phase === "animating" || newIndex === animState.incomingIndex) return;
     if (newIndex < 0 || newIndex >= ethans.length) return;
 
+    const audio = new Audio("/menuselect.mov");
+    audio.currentTime = 0.15;
+    audio.play();
+
     const dir = newIndex > animState.incomingIndex ? "right" : "left";
-    
+
     setAnimState({
       outgoingIndex: animState.incomingIndex,
       incomingIndex: newIndex,
@@ -143,6 +147,22 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         height={916}
       />
       <div className="absolute inset-0 bg-black/40" />
+
+      {/* Left and Right Clouds - visible on lg screens and above */}
+      <Image
+        src="/left cloud.png"
+        alt="Left Cloud"
+        width={1939}
+        height={592}
+        className="hidden lg:block absolute left-0 top-[15vh] -translate-x-1/4 z-5 w-[40vw] h-auto opacity-80"
+      />
+      <Image
+        src="/right cloud.png"
+        alt="Right Cloud"
+        width={1939}
+        height={592}
+        className="hidden lg:block absolute right-0 top-[15vh] translate-x-1/3 z-5 w-[40vw] h-auto opacity-80"
+      />
       {/* Select your Ethan */}
       <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 lg:mx-20">
         Select your Ethan

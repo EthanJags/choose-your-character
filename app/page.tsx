@@ -57,7 +57,7 @@ export default function Home() {
   const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(null);
 
   if (selectedEthan) {
-    return <TitleScreen ethan={selectedEthan} />;
+    return <TitleScreen ethan={selectedEthan} onBack={() => setSelectedEthan(null)} />;
   }
 
   return (
