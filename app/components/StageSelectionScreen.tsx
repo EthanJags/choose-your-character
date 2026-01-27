@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
@@ -10,7 +10,7 @@ import type { Ethan } from "@/app/page";
 
 type StageSelectionScreenProps = {
   ethans: Ethan[];
-    onSelect: (ethan: Ethan) => void;
+  onSelect: (ethan: Ethan) => void;
 };
 
 type AnimationState = {
@@ -28,7 +28,8 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     phase: "idle",
   });
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isSoundOn, setIsSoundOn] = useState(true);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const currentEthan = ethans[animState.incomingIndex];
 
@@ -53,45 +54,60 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  // Play background music on page load
+  // Listen to sound toggle events
   useEffect(() => {
-    if (audioRef.current) return;
-
-    const audio = new Audio();
-    audio.loop = true;
-    audio.volume = 0.0;
-    audioRef.current = audio;
-
-    const tryPlay = () => {
-      audio.play().catch(() => {
-        // Autoplay blocked - will play on first user interaction
-        const playOnInteraction = () => {
-          audio.play();
-          document.removeEventListener("click", playOnInteraction);
-          document.removeEventListener("keydown", playOnInteraction);
-        };
-        document.addEventListener("click", playOnInteraction);
-        document.addEventListener("keydown", playOnInteraction);
-      });
+    const handleSoundToggle = (e: CustomEvent<{ enabled: boolean }>) => {
+      setIsSoundOn(e.detail.enabled);
     };
 
-    audio.addEventListener("canplaythrough", tryPlay, { once: true });
-    audio.src = "/characterSelectSong.mp3";
+    window.addEventListener("soundToggle", handleSoundToggle as EventListener);
+    
+    // Initialize sound state from localStorage
+    const savedPreference = localStorage.getItem("soundEnabled");
+    if (savedPreference !== null) {
+      const enabled = savedPreference === "true";
+      setIsSoundOn(enabled);
+    }
+
+    return () => {
+      window.removeEventListener("soundToggle", handleSoundToggle as EventListener);
+    };
   }, []);
 
   const navigateTo = (newIndex: number) => {
     if (animState.phase === "animating" || newIndex === animState.incomingIndex) return;
-    if (newIndex < 0 || newIndex >= ethans.length) return;
+    
+    // Loop around: if newIndex is negative, go to the last item
+    // If newIndex is >= length, go to the first item
+    let wrappedIndex = newIndex;
+    if (newIndex < 0) {
+      wrappedIndex = ethans.length - 1;
+    } else if (newIndex >= ethans.length) {
+      wrappedIndex = 0;
+    }
+    
+    if (wrappedIndex === animState.incomingIndex) return;
 
-    const audio = new Audio("/menuselect.mov");
-    audio.currentTime = 0.15;
-    audio.play();
+    if (isSoundOn) {
+      const audio = new Audio("/sound-effects/menuselect.mov");
+      audio.currentTime = 0.15;
+      audio.play();
+    }
 
-    const dir = newIndex > animState.incomingIndex ? "right" : "left";
+    // Determine direction: if wrapping from 0 to last, it's left
+    // If wrapping from last to 0, it's right
+    let dir: "left" | "right";
+    if (newIndex < 0) {
+      dir = "left";
+    } else if (newIndex >= ethans.length) {
+      dir = "right";
+    } else {
+      dir = wrappedIndex > animState.incomingIndex ? "right" : "left";
+    }
 
     setAnimState({
       outgoingIndex: animState.incomingIndex,
-      incomingIndex: newIndex,
+      incomingIndex: wrappedIndex,
       direction: dir,
       phase: "animating",
     });
@@ -106,9 +122,15 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     }
   }, [animState.phase]);
 
+  // Reset hover state when character changes
+  useEffect(() => {
+    setHoveredIndex(null);
+  }, [animState.incomingIndex]);
+
   const handlePrevious = () => navigateTo(animState.incomingIndex - 1);
   const handleNext = () => navigateTo(animState.incomingIndex + 1);
   const handleDotClick = (index: number) => navigateTo(index);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -117,12 +139,20 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         handlePrevious();
       } else if (e.key === "ArrowRight") {
         handleNext();
+      } else if (e.key === "Enter" && animState.phase === "idle") {
+        if (isSoundOn) {
+          const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
+          selectAudio.play().catch(() => {
+            // Ignore autoplay errors
+          });
+        }
+        onSelect(ethans[animState.incomingIndex]);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [animState.incomingIndex, animState.phase]);
+  }, [animState.incomingIndex, animState.phase, isSoundOn, handlePrevious, handleNext]);
 
   return (
     <div
@@ -164,7 +194,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         className="hidden lg:block absolute right-0 top-[15vh] translate-x-1/3 z-5 w-[40vw] h-auto opacity-80"
       />
       {/* Select your Ethan */}
-      <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 lg:mx-20">
+      <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 mx-5 lg:mx-20">
         Select your Ethan
       </h1>
 
@@ -192,14 +222,36 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
             translateX = dir === "right" ? "-100vw" : "100vw";
           }
 
+          const isHovered = hoveredIndex === index && isIncoming && !isAnimating;
+          const scale = isHovered ? 1.08 : 1;
+          const translateY = isHovered ? "-15px" : "0px";
+          
           return (
             <div
               key={ethan.id}
-              onClick={() => isIncoming && onSelect(ethan)}
+              onMouseEnter={() => {
+                if (isIncoming && !isAnimating) {
+                  setHoveredIndex(index);
+                }
+              }}
+              onMouseLeave={() => {
+                setHoveredIndex(null);
+              }}
+              onClick={() => {
+                if (isIncoming) {
+                  if (isSoundOn) {
+                    const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
+                    selectAudio.play().catch(() => {
+                      // Ignore autoplay errors
+                    });
+                  }
+                  onSelect(ethan);
+                }
+              }}
               className={`absolute flex items-center justify-center ${isIncoming ? 'cursor-pointer' : ''}`}
               style={{
-                transform: `translateX(${translateX})`,
-                transition: isAnimating ? "transform 800ms ease-out" : "none",
+                transform: `translateX(${translateX}) translateY(${translateY}) scale(${scale})`,
+                transition: isAnimating ? "transform 800ms ease-out" : isIncoming ? "transform 300ms ease-out" : "none",
                 ...(isIncoming && isAnimating && {
                   animation: `slideIn${dir === "right" ? "FromRight" : "FromLeft"} 800ms ease-out forwards`,
                 }),
@@ -228,20 +280,16 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
       </div>
 
       {/* Navigation Arrows */}
-      {animState.incomingIndex > 0 && (
-        <Arrow
-          direction="left"
-          color={isSmallScreen ? "black" : currentEthan.color}
-          onClick={handlePrevious}
-        />
-      )}
-      {animState.incomingIndex < ethans.length - 1 && (
-        <Arrow
-          direction="right"
-          color={isSmallScreen ? "black" : currentEthan.color}
-          onClick={handleNext}
-        />
-      )}
+      <Arrow
+        direction="left"
+        color={isSmallScreen ? "black" : currentEthan.color}
+        onClick={handlePrevious}
+      />
+      <Arrow
+        direction="right"
+        color={isSmallScreen ? "black" : currentEthan.color}
+        onClick={handleNext}
+      />
 
       {/* Buttons */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20">

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import TitleScreen from "./components/TitleScreen";
 import StageSelectionScreen from "./components/StageSelectionScreen";
+import SoundToggle from "./components/SoundToggle";
+import Music from "./components/Music";
+import type { Screen } from "./components/Music";
 
 export type Ethan = {
   id: number;
@@ -60,9 +63,12 @@ const ethans: Ethan[] = [
 
 export default function Home() {
   const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(null);
+  const currentScreen: Screen = selectedEthan ? "title" : "selection";
 
   return (
     <div className="relative overflow-hidden min-h-screen">
+      <Music screen={currentScreen} selectedCharacter={selectedEthan} />
+      <SoundToggle />
       <StageSelectionScreen
         ethans={ethans}
         onSelect={(ethan: Ethan) => {

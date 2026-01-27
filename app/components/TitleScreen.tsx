@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import type { Ethan } from "@/app/page";
 import Arrow from "./Arrow";
@@ -12,13 +12,52 @@ type TitleScreenProps = {
 
 export default function TitleScreen({ ethan, onBack }: TitleScreenProps) {
     const [isExiting, setIsExiting] = useState(false);
+    const [isSoundOn, setIsSoundOn] = useState(true);
 
-    const handleBack = () => {
+    // Listen to sound toggle events
+    useEffect(() => {
+        const handleSoundToggle = (e: CustomEvent<{ enabled: boolean }>) => {
+            setIsSoundOn(e.detail.enabled);
+        };
+
+        window.addEventListener("soundToggle", handleSoundToggle as EventListener);
+        
+        // Initialize sound state from localStorage
+        const savedPreference = localStorage.getItem("soundEnabled");
+        if (savedPreference !== null) {
+            const enabled = savedPreference === "true";
+            setIsSoundOn(enabled);
+        }
+
+        return () => {
+            window.removeEventListener("soundToggle", handleSoundToggle as EventListener);
+        };
+    }, []);
+
+    const handleBack = useCallback(() => {
+        if (isSoundOn) {
+            const audio = new Audio("/sound-effects/drawer-closing.mov");
+            audio.play().catch(() => {
+                // Ignore autoplay errors
+            });
+        }
         setIsExiting(true);
         setTimeout(() => {
             onBack();
         }, 800);
-    };
+    }, [onBack, isSoundOn]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                handleBack();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [handleBack]);
 
     return (
         <div
