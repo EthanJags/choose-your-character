@@ -4,22 +4,25 @@ import { useState, useEffect, useCallback } from "react";
 
 export default function SoundToggle() {
   const [isSoundOn, setIsSoundOn] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
+  // Read from localStorage after hydration
   useEffect(() => {
-    // Store sound preference in localStorage
-    const savedPreference = localStorage.getItem("soundEnabled");
+    setMounted(true);
+    const savedPreference = window.localStorage.getItem("soundEnabled");
     if (savedPreference !== null) {
       setIsSoundOn(savedPreference === "true");
     }
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     // Update localStorage when sound state changes
     localStorage.setItem("soundEnabled", String(isSoundOn));
     
     // Dispatch custom event so other components can listen
     window.dispatchEvent(new CustomEvent("soundToggle", { detail: { enabled: isSoundOn } }));
-  }, [isSoundOn]);
+  }, [isSoundOn, mounted]);
 
   const toggleSound = useCallback(() => {
     setIsSoundOn((prev) => !prev);

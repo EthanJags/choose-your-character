@@ -54,6 +54,14 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Read sound preference from localStorage after hydration
+  useEffect(() => {
+    const savedPreference = window.localStorage.getItem("soundEnabled");
+    if (savedPreference !== null) {
+      setIsSoundOn(savedPreference === "true");
+    }
+  }, []);
+
   // Listen to sound toggle events
   useEffect(() => {
     const handleSoundToggle = (e: CustomEvent<{ enabled: boolean }>) => {
@@ -61,13 +69,6 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     };
 
     window.addEventListener("soundToggle", handleSoundToggle as EventListener);
-    
-    // Initialize sound state from localStorage
-    const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference !== null) {
-      const enabled = savedPreference === "true";
-      setIsSoundOn(enabled);
-    }
 
     return () => {
       window.removeEventListener("soundToggle", handleSoundToggle as EventListener);
@@ -87,6 +88,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     }
     
     if (wrappedIndex === animState.incomingIndex) return;
+    setHoveredIndex(null);
 
     if (isSoundOn) {
       const audio = new Audio("/sound-effects/menuselect.mov");
@@ -122,11 +124,6 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     }
   }, [animState.phase]);
 
-  // Reset hover state when character changes
-  useEffect(() => {
-    setHoveredIndex(null);
-  }, [animState.incomingIndex]);
-
   const handlePrevious = () => navigateTo(animState.incomingIndex - 1);
   const handleNext = () => navigateTo(animState.incomingIndex + 1);
   const handleDotClick = (index: number) => navigateTo(index);
@@ -152,7 +149,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [animState.incomingIndex, animState.phase, isSoundOn, handlePrevious, handleNext]);
+  }, [animState.incomingIndex, animState.phase, ethans, isSoundOn, handlePrevious, handleNext, onSelect]);
 
   return (
     <div
