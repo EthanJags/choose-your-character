@@ -211,15 +211,13 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         </button>
       </div>
 
-      {activeTab === "select" && (
-        <Image
-          src="/mountain.png"
-          className="min-w-[100vw] min-h-[50vh] max-h-[60vh] absolute top-[50%] left-1/2 -translate-x-1/2 z-10"
-          alt="Mountain"
-          width={2038}
-          height={916}
-        />
-      )}
+      <Image
+        src="/mountain.png"
+        className="min-w-[100vw] min-h-[50vh] max-h-[60vh] absolute top-[50%] left-1/2 -translate-x-1/2 z-10"
+        alt="Mountain"
+        width={2038}
+        height={916}
+      />
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Left and Right Clouds - visible on lg screens and above */}

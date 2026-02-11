@@ -30,13 +30,15 @@ function SocialIcon({
 export default function AboutSection() {
   return (
     <div className="absolute inset-0 z-15 flex flex-col items-center pt-28 px-4 pb-6 sm:pt-40 sm:pb-24 overflow-y-auto sm:overflow-hidden">
-      <div className="relative w-[90vw] max-w-[680px] h-[calc(100vh-7rem-1.5rem)] sm:h-[calc(100vh-10rem-6rem)] min-h-[300px] shrink-0 drop-shadow-2xl">
+      <div className="flex justify-center p-4 sm:p-2 shrink-0">
+        <div className="relative w-[90vw] max-w-[680px] h-[calc(100vh-7rem-1.5rem)] sm:h-[calc(100vh-10rem-6rem)] min-h-[300px] shrink-0">
         <Image
           src="/about/notebook.png"
           alt=""
           fill
           className="object-fill block"
           sizes="90vw"
+          style={{ filter: "drop-shadow(0 20px 50px rgba(0,0,0,0.5))" }}
           aria-hidden
         />
         <Image
@@ -148,6 +150,7 @@ export default function AboutSection() {
               913-313-2100
             </a>
           </div>
+        </div>
         </div>
       </div>
     </div>
