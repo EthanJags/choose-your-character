@@ -134,7 +134,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
   const handleNext = () => navigateTo(animState.incomingIndex + 1);
   const handleDotClick = (index: number) => navigateTo(index);
 
-  const keyDownRef = useRef<(e: KeyboardEvent) => void>();
+  const keyDownRef = useRef<((e: KeyboardEvent) => void) | null>(null);
   keyDownRef.current = (e: KeyboardEvent) => {
     if (activeTab === "about") return;
     if (e.key === "ArrowLeft") {
