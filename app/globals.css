@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Figma Hand";
+  src:
+    local("Figma Hand"),
+    local("Figma Hand Regular"),
+    url("/fonts/FigmaHand.woff2") format("woff2"),
+    url("/fonts/FigmaHand.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
