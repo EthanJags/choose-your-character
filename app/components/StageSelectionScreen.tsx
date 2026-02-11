@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
+import AboutSection from "./AboutSection";
 import type { Ethan } from "@/app/page";
 
 
@@ -30,6 +31,8 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"select" | "about">("select");
+  const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
 
   const currentEthan = ethans[animState.incomingIndex];
 
@@ -131,28 +134,40 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
   const handleNext = () => navigateTo(animState.incomingIndex + 1);
   const handleDotClick = (index: number) => navigateTo(index);
 
+  const keyDownRef = useRef<(e: KeyboardEvent) => void>();
+  keyDownRef.current = (e: KeyboardEvent) => {
+    if (activeTab === "about") return;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      handlePrevious();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      handleNext();
+    } else if (e.key === "Enter" && animState.phase === "idle") {
+      e.preventDefault();
+      if (isSoundOn) {
+        const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
+        selectAudio.play().catch(() => {});
+      }
+      onSelect(ethans[animState.incomingIndex]);
+    }
+  };
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
-      if (e.key === "ArrowLeft") {
-        handlePrevious();
-      } else if (e.key === "ArrowRight") {
-        handleNext();
-      } else if (e.key === "Enter" && animState.phase === "idle") {
-        if (isSoundOn) {
-          const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
-          selectAudio.play().catch(() => {
-            // Ignore autoplay errors
-          });
-        }
-        onSelect(ethans[animState.incomingIndex]);
-      }
-    };
+    const handler = (e: KeyboardEvent) => keyDownRef.current?.(e);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [animState.incomingIndex, animState.phase, isSoundOn, handlePrevious, handleNext]);
+  const handleTabClick = (tab: "select" | "about") => {
+    if (tab === activeTab) return;
+    if (isSoundOn) {
+      const audio = new Audio("/sound-effects/menuselect.mov");
+      audio.currentTime = 0.15;
+      audio.play();
+    }
+    setActiveTab(tab);
+  };
 
   return (
     <div
@@ -168,14 +183,43 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         justifyContent: "center",
       }}
     >
-      
-      <Image
-        src="/mountain.png"
-        className="min-w-[100vw] min-h-[50vh] max-h-[60vh] absolute top-[50%] left-1/2 -translate-x-1/2 z-10"
-        alt="Mountain"
-        width={2038}
-        height={916}
-      />
+      {/* Top bar toggle */}
+      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-1 py-1 bg-white rounded-full shadow-lg">
+        <button
+          onClick={() => handleTabClick("select")}
+          onMouseEnter={() => setHoveredTab("select")}
+          onMouseLeave={() => setHoveredTab(null)}
+          className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors duration-300"
+          style={{
+            backgroundColor: activeTab === "select" ? currentEthan.color : "transparent",
+            color: activeTab === "select" ? "#171717" : hoveredTab === "select" ? "#171717" : "#6B6B6B",
+          }}
+        >
+          Projects
+        </button>
+        <button
+          onClick={() => handleTabClick("about")}
+          onMouseEnter={() => setHoveredTab("about")}
+          onMouseLeave={() => setHoveredTab(null)}
+          className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors duration-300"
+          style={{
+            backgroundColor: activeTab === "about" ? "#d1d5db" : "transparent",
+            color: activeTab === "about" ? "#000" : hoveredTab === "about" ? "#171717" : "#6B6B6B",
+          }}
+        >
+          About
+        </button>
+      </div>
+
+      {activeTab === "select" && (
+        <Image
+          src="/mountain.png"
+          className="min-w-[100vw] min-h-[50vh] max-h-[60vh] absolute top-[50%] left-1/2 -translate-x-1/2 z-10"
+          alt="Mountain"
+          width={2038}
+          height={916}
+        />
+      )}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Left and Right Clouds - visible on lg screens and above */}
@@ -193,12 +237,14 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         height={592}
         className="hidden lg:block absolute right-0 top-[15vh] translate-x-1/3 z-5 w-[40vw] h-auto opacity-80"
       />
-      {/* Select your Ethan */}
-      <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 mx-5 lg:mx-20">
-        Select your Ethan
-      </h1>
+      {activeTab === "select" && (
+        <>
+          {/* Select your Ethan */}
+          <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 mx-5 lg:mx-20">
+            Select your Ethan
+          </h1>
 
-      {/* CIRCLE */}
+          {/* CIRCLE */}
       <div
         className={`max-w-[509px] max-h-[509px] w-[40vh] h-[40vh] rounded-full absolute z-8`}
         style={{ 
@@ -299,6 +345,10 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
           onDotClick={handleDotClick}
         />
       </div>
+        </>
+      )}
+
+      {activeTab === "about" && <AboutSection />}
     </div>
   );
 }
