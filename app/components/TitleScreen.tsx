@@ -112,25 +112,26 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
                 animation: "slideUpFromBottom 800ms ease-out",
             }}
         >
-            <Arrow direction="up" color={ethan.thirdColor} onClick={handleBack} />
+            <div className={ethan.slug === "artist" ? "artist-arrow-below-lg" : ""}>
+                <Arrow direction="up" color={ethan.thirdColor} onClick={handleBack} />
+            </div>
             <Image src={'/cloud-long-header.png'} alt={'Clouds'} width={1939} height={592} className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-0 w-full"/>
-            <div className="absolute w-full left-0 top-[15%] md:top-[50%] md:-translate-y-1/2 z-10">
-                <h1 className="uppercase text-center md:text-left md:mx-20" style={{ color: ethan.secondaryColor, fontSize: 'clamp(3rem, 15vw, 15rem)' }}>The <br/>{ethan.name}</h1>
+            <div className={`absolute w-full left-0 top-[15%] md:top-[50%] md:-translate-y-1/2 z-10 ${ethan.slug === "artist" ? "artist-text-below-lg" : ""}`}>
+                <h1 className="uppercase text-center md:text-left md:mx-20" style={{ color: ethan.secondaryColor, fontSize: 'clamp(3rem, 15vw, 15rem)' }}>The <br className="block sm:hidden md:block" />{ethan.name}</h1>
                 <p
-                    className="uppercase text-center cursor-pointer hover:opacity-80 transition-opacity"
+                    className="mt-0 uppercase text-center md:text-left md:mx-20 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={handleEnter}
                     style={{
                         color: ethan.secondaryColor,
                         fontFamily: 'var(--font-londrina-solid), sans-serif',
                         fontWeight: 900,
                         fontSize: 'clamp(1.5rem, 4vw, 4rem)',
-                        marginTop: '20px',
                     }}
                 >
                     {uiStrings.clickToEnter}
                 </p>
             </div>
-            <Image src={ethan.titleImage} alt={ethan.name} width={431} height={721} className="absolute bottom-0 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-[10%] h-[70vh] sm:h-[80vh] md:h-[90vh] w-auto z-1" />
+            <Image src={ethan.titleImage} alt={ethan.name} width={431} height={721} className="absolute -bottom-[10%] md:bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[10%] h-[70vh] sm:h-[80vh] md:h-[90vh] w-auto z-1" />
 
             <style jsx>{`
                 @keyframes slideUpFromBottom {
@@ -139,6 +140,15 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
                     }
                     to {
                         transform: translateY(0);
+                    }
+                }
+                @media (max-width: 1023px) {
+                    .artist-text-below-lg h1,
+                    .artist-text-below-lg p {
+                        color: #5d4e6d !important;
+                    }
+                    .artist-arrow-below-lg :global(svg path) {
+                        stroke: #5d4e6d !important;
                     }
                 }
             `}</style>
