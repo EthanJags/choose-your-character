@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Ethan } from "@/app/page";
 
-export type Screen = "selection" | "title";
+export type Screen = "selection" | "title" | "projects";
 
 type MusicProps = {
   screen: Screen;
@@ -14,7 +14,7 @@ const FADE_DURATION = 800;
 const TARGET_VOLUME = 0.5;
 
 function getMusicForScreen(screen: Screen, character: Ethan | null): string {
-  if (screen === "title" && character) {
+  if ((screen === "title" || screen === "projects") && character) {
     // Special case for adventurer (file is "adventure.mp3" not "adventurer.mp3")
     if (character.name === "adventurer") {
       return "/music/adventure.mp3";

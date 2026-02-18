@@ -55,7 +55,6 @@ body {
 h1 {
   font-family: var(--font-londrina-solid), sans-serif;
   font-weight: 900;
-  line-height: normal;
   letter-spacing: 0;
 }
 

@@ -50,11 +50,11 @@ export default function AboutSection() {
           aria-hidden
         />
         <div
-          className="absolute inset-0 pt-8 pb-6 px-8 sm:pt-14 sm:px-14 flex flex-col overflow-y-auto sm:overflow-hidden"
+          className="absolute inset-0 pt-4 pb-6 px-8 sm:pt-8 sm:px-14 flex flex-col overflow-y-auto sm:overflow-hidden"
           style={{ fontFamily: "var(--font-caveat), cursive" }}
         >
           <h1
-            className="text-4xl sm:text-5xl text-center text-[#1a1a1a] italic mb-1 sm:mb-4"
+            className="text-4xl sm:text-5xl text-center text-[#1a1a1a] italic mb-0 sm:mb-1"
             style={{
               fontFamily: '"Figma Hand", var(--font-figma-hand), cursive',
             }}
@@ -137,6 +137,14 @@ export default function AboutSection() {
             </SocialIcon>
           </div>
           <div className="flex flex-col items-center gap-1 text-[#1a1a1a] font-sans text-base sm:text-lg order-5">
+            <a
+              href="https://docs.google.com/document/d/e/2PACX-1vSBkuEpmc1mmCw2hdymF5ABr9BavTCbBuKZwFFps5DuCwz0WcAAiHnhndi2-NI3H_u52Nrxk3H9J90y/pub"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              View my Resume
+            </a>
             <a
               href="mailto:ethanjagoda@gmail.com?subject=Hello%20from%20my%20portfolio!"
               className="hover:underline hover:opacity-80 transition-opacity cursor-pointer"

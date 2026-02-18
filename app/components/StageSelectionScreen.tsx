@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
 import AboutSection from "./AboutSection";
 import type { Ethan } from "@/app/page";
+import { uiStrings } from "@/app/data/content";
 
 
 
 type StageSelectionScreenProps = {
   ethans: Ethan[];
+  initialCharacterIndex?: number | null;
   onSelect: (ethan: Ethan) => void;
 };
 
@@ -21,15 +23,43 @@ type AnimationState = {
   phase: "idle" | "animating";
 };
 
-export default function StageSelectionScreen({ ethans, onSelect }: StageSelectionScreenProps) {
+export default function StageSelectionScreen({
+  ethans,
+  initialCharacterIndex,
+  onSelect,
+}: StageSelectionScreenProps) {
   const [animState, setAnimState] = useState<AnimationState>({
     outgoingIndex: null,
-    incomingIndex: 0,
+    incomingIndex:
+      initialCharacterIndex != null && initialCharacterIndex >= 0
+        ? Math.min(initialCharacterIndex, ethans.length - 1)
+        : 0,
     direction: "right",
     phase: "idle",
   });
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isSoundOn, setIsSoundOn] = useState(true);
+
+  useEffect(() => {
+    if (
+      initialCharacterIndex != null &&
+      initialCharacterIndex >= 0 &&
+      initialCharacterIndex < ethans.length &&
+      animState.incomingIndex !== initialCharacterIndex
+    ) {
+      setAnimState((prev) => ({
+        ...prev,
+        incomingIndex: initialCharacterIndex,
+      }));
+    }
+  }, [initialCharacterIndex, ethans.length]);
+  const [isSmallScreen, setIsSmallScreen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 639px)").matches;
+  });
+  const [isSoundOn, setIsSoundOn] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const savedPreference = localStorage.getItem("soundEnabled");
+    return savedPreference === null ? true : savedPreference === "true";
+  });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"select" | "about">("select");
   const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
@@ -47,7 +77,6 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
   // Detect screen size below sm breakpoint (640px)
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
-    setIsSmallScreen(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
       setIsSmallScreen(e.matches);
@@ -64,57 +93,49 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     };
 
     window.addEventListener("soundToggle", handleSoundToggle as EventListener);
-    
-    // Initialize sound state from localStorage
-    const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference !== null) {
-      const enabled = savedPreference === "true";
-      setIsSoundOn(enabled);
-    }
 
     return () => {
       window.removeEventListener("soundToggle", handleSoundToggle as EventListener);
     };
   }, []);
 
-  const navigateTo = (newIndex: number) => {
-    if (animState.phase === "animating" || newIndex === animState.incomingIndex) return;
-    
-    // Loop around: if newIndex is negative, go to the last item
-    // If newIndex is >= length, go to the first item
-    let wrappedIndex = newIndex;
-    if (newIndex < 0) {
-      wrappedIndex = ethans.length - 1;
-    } else if (newIndex >= ethans.length) {
-      wrappedIndex = 0;
-    }
-    
-    if (wrappedIndex === animState.incomingIndex) return;
+  const navigateTo = useCallback((newIndex: number) => {
+    setHoveredIndex(null);
+    setAnimState((prev) => {
+      if (prev.phase === "animating" || newIndex === prev.incomingIndex) return prev;
 
-    if (isSoundOn) {
-      const audio = new Audio("/sound-effects/menuselect.mov");
-      audio.currentTime = 0.15;
-      audio.play();
-    }
+      let wrappedIndex = newIndex;
+      if (newIndex < 0) {
+        wrappedIndex = ethans.length - 1;
+      } else if (newIndex >= ethans.length) {
+        wrappedIndex = 0;
+      }
 
-    // Determine direction: if wrapping from 0 to last, it's left
-    // If wrapping from last to 0, it's right
-    let dir: "left" | "right";
-    if (newIndex < 0) {
-      dir = "left";
-    } else if (newIndex >= ethans.length) {
-      dir = "right";
-    } else {
-      dir = wrappedIndex > animState.incomingIndex ? "right" : "left";
-    }
+      if (wrappedIndex === prev.incomingIndex) return prev;
 
-    setAnimState({
-      outgoingIndex: animState.incomingIndex,
-      incomingIndex: wrappedIndex,
-      direction: dir,
-      phase: "animating",
+      if (isSoundOn) {
+        const audio = new Audio("/sound-effects/menuselect.mov");
+        audio.currentTime = 0.15;
+        audio.play();
+      }
+
+      let dir: "left" | "right";
+      if (newIndex < 0) {
+        dir = "left";
+      } else if (newIndex >= ethans.length) {
+        dir = "right";
+      } else {
+        dir = wrappedIndex > prev.incomingIndex ? "right" : "left";
+      }
+
+      return {
+        outgoingIndex: prev.incomingIndex,
+        incomingIndex: wrappedIndex,
+        direction: dir,
+        phase: "animating",
+      };
     });
-  };
+  }, [ethans.length, isSoundOn]);
 
   useEffect(() => {
     if (animState.phase === "animating") {
@@ -125,39 +146,89 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
     }
   }, [animState.phase]);
 
-  // Reset hover state when character changes
+  const handlePrevious = useCallback(() => {
+    navigateTo(animState.incomingIndex - 1);
+  }, [animState.incomingIndex, navigateTo]);
+  const handleNext = useCallback(() => {
+    navigateTo(animState.incomingIndex + 1);
+  }, [animState.incomingIndex, navigateTo]);
+  const handleDotClick = useCallback((index: number) => navigateTo(index), [navigateTo]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+
+  // Horizontal wheel scroll to navigate
   useEffect(() => {
-    setHoveredIndex(null);
-  }, [animState.incomingIndex]);
+    const el = containerRef.current;
+    if (!el) return;
 
-  const handlePrevious = () => navigateTo(animState.incomingIndex - 1);
-  const handleNext = () => navigateTo(animState.incomingIndex + 1);
-  const handleDotClick = (index: number) => navigateTo(index);
-
-  const keyDownRef = useRef<((e: KeyboardEvent) => void) | null>(null);
-  keyDownRef.current = (e: KeyboardEvent) => {
-    if (activeTab === "about") return;
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      handlePrevious();
-    } else if (e.key === "ArrowRight") {
-      e.preventDefault();
-      handleNext();
-    } else if (e.key === "Enter" && animState.phase === "idle") {
-      e.preventDefault();
-      if (isSoundOn) {
-        const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
-        selectAudio.play().catch(() => {});
+    const handleWheel = (e: WheelEvent) => {
+      if (activeTab === "about") return;
+      if (animState.phase === "animating") return;
+      const threshold = 50;
+      if (e.deltaX > threshold) {
+        navigateTo(animState.incomingIndex + 1);
+      } else if (e.deltaX < -threshold) {
+        navigateTo(animState.incomingIndex - 1);
       }
-      onSelect(ethans[animState.incomingIndex]);
-    }
-  };
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: true });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [activeTab, animState.incomingIndex, animState.phase, navigateTo]);
+
+  // Touch swipe to navigate
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (activeTab === "about") return;
+      touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (activeTab === "about") return;
+      if (animState.phase === "animating") return;
+      const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+      const threshold = 50;
+      if (deltaX > threshold) {
+        navigateTo(animState.incomingIndex + 1);
+      } else if (deltaX < -threshold) {
+        navigateTo(animState.incomingIndex - 1);
+      }
+    };
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchend", handleTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [activeTab, animState.incomingIndex, animState.phase, navigateTo]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => keyDownRef.current?.(e);
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeTab === "about") return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        navigateTo(animState.incomingIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        navigateTo(animState.incomingIndex + 1);
+      } else if (e.key === "Enter" && animState.phase === "idle") {
+        e.preventDefault();
+        if (isSoundOn) {
+          const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
+          selectAudio.play().catch(() => {});
+        }
+        onSelect(ethans[animState.incomingIndex]);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeTab, animState.incomingIndex, animState.phase, ethans, isSoundOn, onSelect, navigateTo]);
 
   const handleTabClick = (tab: "select" | "about") => {
     if (tab === activeTab) return;
@@ -171,6 +242,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
 
   return (
     <div
+      ref={containerRef}
       className="min-h-screen w-full h-screen overflow-hidden"
       style={{
         backgroundImage: "url('/background.png')",
@@ -192,7 +264,14 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
           className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors duration-300"
           style={{
             backgroundColor: activeTab === "select" ? currentEthan.color : "transparent",
-            color: activeTab === "select" ? "#171717" : hoveredTab === "select" ? "#171717" : "#6B6B6B",
+            color:
+              activeTab === "select"
+                ? currentEthan.slug === "engineer"
+                  ? "white"
+                  : "#171717"
+                : hoveredTab === "select"
+                  ? "#171717"
+                  : "#6B6B6B",
           }}
         >
           Projects
@@ -239,7 +318,7 @@ export default function StageSelectionScreen({ ethans, onSelect }: StageSelectio
         <>
           {/* Select your Ethan */}
           <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 mx-5 lg:mx-20">
-            Select your Ethan
+            {uiStrings.selectCharacter}
           </h1>
 
           {/* CIRCLE */}

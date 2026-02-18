@@ -3,6 +3,7 @@ import Link from "next/link";
 import fs from "fs";
 import path from "path";
 import { characters } from "@/app/data/content";
+import AutoFitText from "@/app/components/AutoFitText";
 
 const IMAGE_EXTENSIONS = [".jpeg", ".jpg", ".png", ".webp", ".JPG"];
 
@@ -56,7 +57,7 @@ export default async function ProjectPage({
     >
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 md:px-8 md:py-6">
         <Link
-          href="/"
+          href={`/?character=${characterSlug}&projects=1&project=${projectSlug}`}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           style={{ color: character.secondaryColor }}
         >
@@ -86,47 +87,69 @@ export default async function ProjectPage({
       </header>
 
       <main className="max-w-5xl mx-auto px-4 md:px-8 pb-20">
+        {((project.demoUrl && project.demoLabel) || project.devpostUrl) && (
+          <div className="flex flex-wrap gap-4 mb-8">
+            {project.demoUrl && project.demoLabel && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+                style={{
+                  color: character.secondaryColor,
+                  fontFamily: "var(--font-londrina-solid), sans-serif",
+                }}
+              >
+                {project.demoLabel}
+              </a>
+            )}
+            {project.devpostUrl && (
+              <a
+                href={project.devpostUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+                style={{
+                  color: character.secondaryColor,
+                  fontFamily: "var(--font-londrina-solid), sans-serif",
+                }}
+              >
+                {project.devpostLabel ?? "View on Devpost"}
+              </a>
+            )}
+          </div>
+        )}
         <div className="mb-12">
-          <h1
+          <AutoFitText
+            as="h1"
             className="uppercase text-center md:text-left"
+            baseFontSize="clamp(2.5rem, 10vw, 6rem)"
             style={{
               color: character.secondaryColor,
               fontFamily: "var(--font-londrina-solid), sans-serif",
               fontWeight: 900,
-              fontSize: "clamp(2.5rem, 10vw, 6rem)",
               lineHeight: 1,
             }}
           >
             {project.title}
-          </h1>
-          <p
+          </AutoFitText>
+          <AutoFitText
+            as="p"
             className="uppercase mt-2 text-center md:text-left"
+            baseFontSize="clamp(1rem, 2.5vw, 1.5rem)"
             style={{
               color: character.secondaryColor,
               fontFamily: "var(--font-londrina-solid), sans-serif",
               fontWeight: 900,
-              fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
               opacity: 0.9,
             }}
           >
             {project.subtitle}
-          </p>
+          </AutoFitText>
         </div>
 
-        {project.description && (
-          <p
-            className="mb-12 max-w-2xl text-lg md:text-xl leading-relaxed"
-            style={{
-              color: character.secondaryColor,
-              opacity: 0.95,
-            }}
-          >
-            {project.description}
-          </p>
-        )}
-
         <div
-          className="columns-2 md:columns-3 gap-4"
+          className="columns-2 md:columns-3 gap-4 mb-12"
           style={{ columnFill: "balance" }}
         >
           {images.map((src, i) => (
@@ -144,6 +167,59 @@ export default async function ProjectPage({
             </div>
           ))}
         </div>
+
+        {project.description && (
+          <div
+            className={`max-w-2xl text-lg md:text-xl leading-relaxed ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
+            style={{
+              color: character.secondaryColor,
+              opacity: 0.95,
+            }}
+          >
+            {project.description.split("\n\n").map((paragraph, i) => {
+              const colonMatch = paragraph.match(/^(.+?):\s*(.*)$/);
+              const isLabelContent =
+                colonMatch &&
+                colonMatch[1].length < 50 &&
+                (colonMatch[2].length > 0 || paragraph.endsWith(":"));
+              const isStandaloneHeader =
+                (paragraph.length < 60 && paragraph.includes(" - ")) ||
+                (paragraph.length < 40 && !paragraph.includes(":"));
+              if (isLabelContent && colonMatch) {
+                const [, label, content] = colonMatch;
+                return (
+                  <div key={i} className={i > 0 ? "mt-4" : ""}>
+                    <h3 className="font-semibold mb-1">{label}:</h3>
+                    {content ? <p>{content}</p> : null}
+                  </div>
+                );
+              }
+              if (isStandaloneHeader) {
+                return (
+                  <h3 key={i} className={`font-semibold ${i > 0 ? "mt-4" : ""}`}>
+                    {paragraph}
+                  </h3>
+                );
+              }
+              return (
+                <p key={i} className={i > 0 ? "mt-4" : ""}>
+                  {paragraph}
+                </p>
+              );
+            })}
+          </div>
+        )}
+        {project.hackathonAwards && (
+          <p
+            className="mb-12 max-w-2xl text-base md:text-lg italic"
+            style={{
+              color: character.secondaryColor,
+              opacity: 0.85,
+            }}
+          >
+            {project.hackathonAwards}
+          </p>
+        )}
       </main>
     </div>
   );
