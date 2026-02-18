@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import TitleScreen from "./components/TitleScreen";
 import StageSelectionScreen from "./components/StageSelectionScreen";
 import ProjectsScreen from "./components/ProjectsScreen";
-import SoundToggle from "./components/SoundToggle";
 import Music from "./components/Music";
 import type { Screen } from "./components/Music";
 import { characters } from "./data/content";
@@ -16,21 +15,30 @@ export type Ethan = CharacterEntry;
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(null);
-  const [showProjects, setShowProjects] = useState(false);
+  const router = useRouter();
+  const charSlug = searchParams.get("character");
+  const showProjectsParam = searchParams.get("projects");
+  const characterIndex =
+    charSlug != null ? characters.findIndex((c) => c.slug === charSlug) : -1;
+  const shouldShowProjects = showProjectsParam === "1" && characterIndex >= 0;
+
+  const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(() =>
+    shouldShowProjects ? characters[characterIndex] : null
+  );
+  const [showProjects, setShowProjects] = useState(shouldShowProjects);
   const [lastViewedCharacterIndex, setLastViewedCharacterIndex] = useState<
     number | null
   >(null);
 
   useEffect(() => {
-    const charSlug = searchParams.get("character");
-    if (charSlug) {
-      const index = characters.findIndex((c) => c.slug === charSlug);
-      if (index >= 0) {
-        setLastViewedCharacterIndex(index);
+    if (charSlug && characterIndex >= 0) {
+      setLastViewedCharacterIndex(characterIndex);
+      if (shouldShowProjects) {
+        setSelectedEthan(characters[characterIndex]);
+        setShowProjects(true);
       }
     }
-  }, [searchParams]);
+  }, [charSlug, characterIndex, shouldShowProjects]);
 
   const currentScreen: Screen = showProjects
     ? "projects"
@@ -41,7 +49,6 @@ function HomeContent() {
   return (
     <div className="relative overflow-hidden min-h-screen">
       <Music screen={currentScreen} selectedCharacter={selectedEthan} />
-      <SoundToggle />
       {!showProjects && (
         <StageSelectionScreen
           ethans={characters}
@@ -72,12 +79,15 @@ function HomeContent() {
         <div className="absolute inset-0 z-50">
           <ProjectsScreen
             ethan={selectedEthan}
+            initialProjectSlug={searchParams.get("project") ?? undefined}
             onBack={() => {
-              setLastViewedCharacterIndex(
-                characters.findIndex((c) => c.id === selectedEthan.id)
-              );
+              const index = characters.findIndex((c) => c.id === selectedEthan.id);
+              setLastViewedCharacterIndex(index);
               setShowProjects(false);
               setSelectedEthan(null);
+              router.replace(
+                index >= 0 ? `/?character=${characters[index].slug}` : "/"
+              );
             }}
           />
         </div>

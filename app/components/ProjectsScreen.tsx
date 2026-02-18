@@ -4,44 +4,14 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AutoFitText from "./AutoFitText";
+import DotIndicator from "./DotIndicator";
 import type { Ethan, Project } from "@/app/page";
 
 type ProjectsScreenProps = {
   ethan: Ethan;
+  initialProjectSlug?: string;
   onBack: () => void;
 };
-
-function DotIndicator({
-  count,
-  activeIndex,
-  color,
-  onDotClick,
-}: {
-  count: number;
-  activeIndex: number;
-  color: string;
-  onDotClick: (index: number) => void;
-}) {
-  return (
-    <div
-      className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-5 py-6 px-2 rounded-full"
-      style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-    >
-      {Array.from({ length: count }).map((_, i) => (
-        <button
-          key={i}
-          onClick={() => onDotClick(i)}
-          className="w-4 h-4 md:w-5 md:h-5 rounded-full transition-all duration-300 cursor-pointer"
-          style={{
-            backgroundColor: i === activeIndex ? color : "rgba(255,255,255,0.3)",
-            transform: i === activeIndex ? "scale(1.3)" : "scale(1)",
-          }}
-          aria-label={`Go to project ${i + 1}`}
-        />
-      ))}
-    </div>
-  );
-}
 
 function ProjectSlide({
   project,
@@ -58,7 +28,7 @@ function ProjectSlide({
       : projectHref;
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center px-8 md:px-16">
+    <div className="w-full h-screen flex flex-col items-center justify-center pl-8 pr-8 md:pl-16 md:pr-16 sm:pr-20 md:pr-24 py-20 sm:py-8">
       <Link
         href={cardHref}
         target={project.externalLinkOnly ? "_blank" : undefined}
@@ -66,15 +36,25 @@ function ProjectSlide({
         className="flex flex-col items-center w-full max-w-[1141px] cursor-pointer hover:opacity-95 transition-opacity"
       >
         <div
-          className="relative w-full max-w-[1141px] aspect-[1141/652] overflow-hidden rounded-sm"
-          style={{ boxShadow: "0px 20px 26.6px 6px rgba(0,0,0,0.25)" }}
+          className="w-full max-w-[1141px]"
+          style={{ aspectRatio: "1141/652" }}
         >
-          <Image
+          <div
+            className="relative mx-auto h-full overflow-hidden rounded-sm"
+            style={{
+              aspectRatio: project.aspectRatio ?? "1141/652",
+              width: project.aspectRatio ? "auto" : "100%",
+              maxWidth: "100%",
+              boxShadow: "0px 20px 26.6px 6px rgba(0,0,0,0.25)",
+            }}
+          >
+            <Image
             src={project.image}
             alt={project.title}
             fill
             className="object-cover"
           />
+          </div>
         </div>
         <AutoFitText
           as="h2"
@@ -102,28 +82,58 @@ function ProjectSlide({
           {project.subtitle}
         </AutoFitText>
       </Link>
-      {project.demoUrl && (
-        <a
-          href={project.demoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="uppercase mt-4 cursor-pointer hover:opacity-80 transition-opacity"
-          style={{
-            color: secondaryColor,
-            fontFamily: "var(--font-londrina-solid), sans-serif",
-            fontWeight: 900,
-            fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
-          }}
-        >
-          {project.demoLabel ?? "View demo"}
-        </a>
+      {(project.demoUrl || project.devpostUrl) && (
+        <div className="flex flex-wrap justify-center gap-4 mt-4">
+          {project.demoUrl && (
+            <a
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="uppercase cursor-pointer hover:opacity-80 transition-opacity"
+              style={{
+                color: secondaryColor,
+                fontFamily: "var(--font-londrina-solid), sans-serif",
+                fontWeight: 900,
+                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
+              }}
+            >
+              {project.demoLabel ?? "View demo"}
+            </a>
+          )}
+          {project.devpostUrl && (
+            <a
+              href={project.devpostUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="uppercase cursor-pointer hover:opacity-80 transition-opacity"
+              style={{
+                color: secondaryColor,
+                fontFamily: "var(--font-londrina-solid), sans-serif",
+                fontWeight: 900,
+                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
+              }}
+            >
+              {project.devpostLabel ?? "View on Devpost"}
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-export default function ProjectsScreen({ ethan, onBack }: ProjectsScreenProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function ProjectsScreen({
+  ethan,
+  initialProjectSlug,
+  onBack,
+}: ProjectsScreenProps) {
+  const initialIndex =
+    initialProjectSlug != null
+      ? ethan.projects.findIndex((p) => p.slug === initialProjectSlug)
+      : -1;
+  const [currentIndex, setCurrentIndex] = useState(
+    initialIndex >= 0 ? initialIndex : 0
+  );
   const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);

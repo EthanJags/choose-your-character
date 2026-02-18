@@ -264,7 +264,14 @@ export default function StageSelectionScreen({
           className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors duration-300"
           style={{
             backgroundColor: activeTab === "select" ? currentEthan.color : "transparent",
-            color: activeTab === "select" ? "#171717" : hoveredTab === "select" ? "#171717" : "#6B6B6B",
+            color:
+              activeTab === "select"
+                ? currentEthan.slug === "engineer"
+                  ? "white"
+                  : "#171717"
+                : hoveredTab === "select"
+                  ? "#171717"
+                  : "#6B6B6B",
           }}
         >
           Projects

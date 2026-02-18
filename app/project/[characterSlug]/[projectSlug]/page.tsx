@@ -57,7 +57,7 @@ export default async function ProjectPage({
     >
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 md:px-8 md:py-6">
         <Link
-          href={`/?character=${characterSlug}`}
+          href={`/?character=${characterSlug}&projects=1&project=${projectSlug}`}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           style={{ color: character.secondaryColor }}
         >
@@ -87,19 +87,37 @@ export default async function ProjectPage({
       </header>
 
       <main className="max-w-5xl mx-auto px-4 md:px-8 pb-20">
-        {project.devpostUrl && (
-          <a
-            href={project.devpostUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mb-8 uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
-            style={{
-              color: character.secondaryColor,
-              fontFamily: "var(--font-londrina-solid), sans-serif",
-            }}
-          >
-            View on Devpost
-          </a>
+        {((project.demoUrl && project.demoLabel) || project.devpostUrl) && (
+          <div className="flex flex-wrap gap-4 mb-8">
+            {project.demoUrl && project.demoLabel && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+                style={{
+                  color: character.secondaryColor,
+                  fontFamily: "var(--font-londrina-solid), sans-serif",
+                }}
+              >
+                {project.demoLabel}
+              </a>
+            )}
+            {project.devpostUrl && (
+              <a
+                href={project.devpostUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+                style={{
+                  color: character.secondaryColor,
+                  fontFamily: "var(--font-londrina-solid), sans-serif",
+                }}
+              >
+                {project.devpostLabel ?? "View on Devpost"}
+              </a>
+            )}
+          </div>
         )}
         <div className="mb-12">
           <AutoFitText
@@ -130,31 +148,8 @@ export default async function ProjectPage({
           </AutoFitText>
         </div>
 
-        {project.description && (
-          <p
-            className={`max-w-2xl text-lg md:text-xl leading-relaxed ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
-            style={{
-              color: character.secondaryColor,
-              opacity: 0.95,
-            }}
-          >
-            {project.description}
-          </p>
-        )}
-        {project.hackathonAwards && (
-          <p
-            className="mb-12 max-w-2xl text-base md:text-lg italic"
-            style={{
-              color: character.secondaryColor,
-              opacity: 0.85,
-            }}
-          >
-            {project.hackathonAwards}
-          </p>
-        )}
-
         <div
-          className="columns-2 md:columns-3 gap-4"
+          className="columns-2 md:columns-3 gap-4 mb-12"
           style={{ columnFill: "balance" }}
         >
           {images.map((src, i) => (
@@ -172,6 +167,59 @@ export default async function ProjectPage({
             </div>
           ))}
         </div>
+
+        {project.description && (
+          <div
+            className={`max-w-2xl text-lg md:text-xl leading-relaxed ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
+            style={{
+              color: character.secondaryColor,
+              opacity: 0.95,
+            }}
+          >
+            {project.description.split("\n\n").map((paragraph, i) => {
+              const colonMatch = paragraph.match(/^(.+?):\s*(.*)$/);
+              const isLabelContent =
+                colonMatch &&
+                colonMatch[1].length < 50 &&
+                (colonMatch[2].length > 0 || paragraph.endsWith(":"));
+              const isStandaloneHeader =
+                (paragraph.length < 60 && paragraph.includes(" - ")) ||
+                (paragraph.length < 40 && !paragraph.includes(":"));
+              if (isLabelContent && colonMatch) {
+                const [, label, content] = colonMatch;
+                return (
+                  <div key={i} className={i > 0 ? "mt-4" : ""}>
+                    <h3 className="font-semibold mb-1">{label}:</h3>
+                    {content ? <p>{content}</p> : null}
+                  </div>
+                );
+              }
+              if (isStandaloneHeader) {
+                return (
+                  <h3 key={i} className={`font-semibold ${i > 0 ? "mt-4" : ""}`}>
+                    {paragraph}
+                  </h3>
+                );
+              }
+              return (
+                <p key={i} className={i > 0 ? "mt-4" : ""}>
+                  {paragraph}
+                </p>
+              );
+            })}
+          </div>
+        )}
+        {project.hackathonAwards && (
+          <p
+            className="mb-12 max-w-2xl text-base md:text-lg italic"
+            style={{
+              color: character.secondaryColor,
+              opacity: 0.85,
+            }}
+          >
+            {project.hackathonAwards}
+          </p>
+        )}
       </main>
     </div>
   );

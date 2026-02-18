@@ -117,7 +117,7 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
             </div>
             <Image src={'/cloud-long-header.png'} alt={'Clouds'} width={1939} height={592} className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-0 w-full"/>
             <div className={`absolute w-full left-0 top-[15%] md:top-[50%] md:-translate-y-1/2 z-10 ${ethan.slug === "artist" ? "artist-text-below-lg" : ""}`}>
-                <h1 className="uppercase text-center md:text-left md:mx-20" style={{ color: ethan.secondaryColor, fontSize: 'clamp(3rem, 15vw, 15rem)' }}>The <br className="block sm:hidden md:block" />{ethan.name}</h1>
+                <h1 className="uppercase text-center md:text-left md:mx-20 leading-none md:leading-normal" style={{ color: ethan.secondaryColor, fontSize: 'clamp(3rem, 15vw, 15rem)' }}>The <br className="block  md:block" />{ethan.name}</h1>
                 <p
                     className="mt-0 uppercase text-center md:text-left md:mx-20 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={handleEnter}
@@ -131,7 +131,7 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
                     {uiStrings.clickToEnter}
                 </p>
             </div>
-            <Image src={ethan.titleImage} alt={ethan.name} width={431} height={721} className="absolute -bottom-[10%] md:bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[10%] h-[70vh] sm:h-[80vh] md:h-[90vh] w-auto z-1" />
+            <Image src={ethan.titleImage} alt={ethan.name} width={431} height={721} className="absolute -bottom-[5%] lg:bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[10%] h-[70vh] sm:h-[70vh] md:h-[90vh] w-auto z-1" />
 
             <style jsx>{`
                 @keyframes slideUpFromBottom {
