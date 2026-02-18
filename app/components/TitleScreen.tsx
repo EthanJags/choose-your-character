@@ -54,9 +54,9 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
         onEnter();
     }, [onEnter, isExiting]);
 
-    useEffect(() => {
+        useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowUp") {
+            if (e.key === "ArrowUp" || e.key === "Escape") {
                 e.preventDefault();
                 handleBack();
             } else if (e.key === "Enter") {

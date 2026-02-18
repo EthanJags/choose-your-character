@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import AutoFitText from "./AutoFitText";
 import type { Ethan, Project } from "@/app/page";
 
 type ProjectsScreenProps = {
@@ -51,10 +52,17 @@ function ProjectSlide({
   secondaryColor: string;
   projectHref: string;
 }) {
+  const cardHref =
+    project.externalLinkOnly && project.demoUrl
+      ? project.demoUrl
+      : projectHref;
+
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center px-8 md:px-16">
       <Link
-        href={projectHref}
+        href={cardHref}
+        target={project.externalLinkOnly ? "_blank" : undefined}
+        rel={project.externalLinkOnly ? "noopener noreferrer" : undefined}
         className="flex flex-col items-center w-full max-w-[1141px] cursor-pointer hover:opacity-95 transition-opacity"
       >
         <div
@@ -68,29 +76,31 @@ function ProjectSlide({
             className="object-cover"
           />
         </div>
-        <h2
+        <AutoFitText
+          as="h2"
           className="uppercase text-center mt-6"
+          baseFontSize="clamp(2rem, 8vw, 8rem)"
           style={{
             color: secondaryColor,
             fontFamily: "var(--font-londrina-solid), sans-serif",
             fontWeight: 900,
-            fontSize: "clamp(2rem, 8vw, 8rem)",
             lineHeight: 1,
           }}
         >
           {project.title}
-        </h2>
-        <p
+        </AutoFitText>
+        <AutoFitText
+          as="p"
           className="text-center mt-2"
+          baseFontSize="clamp(1rem, 2.5vw, 2rem)"
           style={{
             color: secondaryColor,
             fontFamily: "var(--font-londrina-solid), sans-serif",
             fontWeight: 900,
-            fontSize: "clamp(1rem, 2.5vw, 2rem)",
           }}
         >
           {project.subtitle}
-        </p>
+        </AutoFitText>
       </Link>
       {project.demoUrl && (
         <a
@@ -105,7 +115,7 @@ function ProjectSlide({
             fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
           }}
         >
-          View demo
+          {project.demoLabel ?? "View demo"}
         </a>
       )}
     </div>

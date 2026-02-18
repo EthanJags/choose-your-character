@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import TitleScreen from "./components/TitleScreen";
 import StageSelectionScreen from "./components/StageSelectionScreen";
 import ProjectsScreen from "./components/ProjectsScreen";
@@ -13,9 +14,23 @@ import type { ProjectEntry, CharacterEntry } from "./data/content";
 export type Project = ProjectEntry;
 export type Ethan = CharacterEntry;
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
   const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(null);
   const [showProjects, setShowProjects] = useState(false);
+  const [lastViewedCharacterIndex, setLastViewedCharacterIndex] = useState<
+    number | null
+  >(null);
+
+  useEffect(() => {
+    const charSlug = searchParams.get("character");
+    if (charSlug) {
+      const index = characters.findIndex((c) => c.slug === charSlug);
+      if (index >= 0) {
+        setLastViewedCharacterIndex(index);
+      }
+    }
+  }, [searchParams]);
 
   const currentScreen: Screen = showProjects
     ? "projects"
@@ -30,8 +45,12 @@ export default function Home() {
       {!showProjects && (
         <StageSelectionScreen
           ethans={characters}
+          initialCharacterIndex={lastViewedCharacterIndex}
           onSelect={(ethan: Ethan) => {
             setSelectedEthan(ethan);
+            setLastViewedCharacterIndex(
+              characters.findIndex((c) => c.id === ethan.id)
+            );
           }}
         />
       )}
@@ -39,7 +58,12 @@ export default function Home() {
         <div className="absolute inset-0 z-50">
           <TitleScreen
             ethan={selectedEthan}
-            onBack={() => setSelectedEthan(null)}
+            onBack={() => {
+              setLastViewedCharacterIndex(
+                characters.findIndex((c) => c.id === selectedEthan.id)
+              );
+              setSelectedEthan(null);
+            }}
             onEnter={() => setShowProjects(true)}
           />
         </div>
@@ -49,12 +73,23 @@ export default function Home() {
           <ProjectsScreen
             ethan={selectedEthan}
             onBack={() => {
-          setShowProjects(false);
-          setSelectedEthan(null);
-        }}
+              setLastViewedCharacterIndex(
+                characters.findIndex((c) => c.id === selectedEthan.id)
+              );
+              setShowProjects(false);
+              setSelectedEthan(null);
+            }}
           />
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }

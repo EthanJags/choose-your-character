@@ -11,6 +11,11 @@ export type ProjectEntry = {
   slug: string;
   description: string;
   demoUrl?: string;
+  demoLabel?: string;
+  /** When true, card links to demoUrl instead of project page */
+  externalLinkOnly?: boolean;
+  devpostUrl?: string;
+  hackathonAwards?: string;
 };
 
 export type CharacterEntry = {
@@ -54,12 +59,12 @@ export const characters: CharacterEntry[] = [
         description: "A seven-day summit of Uhuru Peak, the highest point in Africa at 5,895 meters. The climb traversed five climate zones from rainforest to arctic summit.",
       },
       {
-        image: "/projects/adventure/japan/thumbnail.jpeg",
+        image: "/projects/adventure/japan/thumbnail.jpg",
         title: "Japan",
-        subtitle: "Best trip of my life",
-        content: "CONTENT HERE",
+        subtitle: "Connecting with nature and culture",
+        content: "",
         slug: "japan",
-        description: "A journey across Japan exploring ancient temples, regional ramen, and the open road. From Tokyo to Kyoto and beyond.",
+        description: "Spent 2 weeks in Japan exploring Kyoto and Tokyo. Ate lots of ramen and japanese curry. Spent every night with locals. Was on Japanese Natinal Television.",
       },
       {
         image: "/projects/adventure/china/thumbnail.jpeg",
@@ -99,6 +104,7 @@ export const characters: CharacterEntry[] = [
         slug: "tiny-dorm",
         description: "A collaborative music space and community at Berkeley, bringing musicians together for jam sessions and creative exchange.",
         demoUrl: "https://www.instagram.com/c.u.bclub/",
+        demoLabel: "View Instagram",
       },
       {
         image: "/projects/artist/seamonkeys/thumbnail.jpeg",
@@ -108,6 +114,7 @@ export const characters: CharacterEntry[] = [
         slug: "seamonkeys",
         description: "The best band of our lifetime. A musical project with friends.",
         demoUrl: "https://www.instagram.com/the.seamonkeys/",
+        demoLabel: "View Instagram",
       },
     ],
   },
@@ -124,13 +131,17 @@ export const characters: CharacterEntry[] = [
     titleImage: "/engineer-title.png",
     projects: [
       {
-        image: "/projects/engineer/enable/thumbnail.png",
-        title: "Enable",
-        subtitle: "Prosthetic development in the comfort of your own home",
+        image: "/projects/engineer/access-ai/thumbnail.png",
+        title: "Access AI",
+        subtitle: "Your 24/7 autonomous accessibility auditor",
         content: "",
-        slug: "enable",
-        description: "Enabling prosthetic development in the comfort of your own home. Making accessible medical device technology for amputees.",
-        demoUrl: "https://enable.vercel.app/",
+        slug: "access-ai",
+        description:
+          "The internet is broken for 1.3 billion people. 96% of the top 1 million homepages fail basic accessibility standards. AccessAI autonomously browses like a visually impaired user, identifies violations, and exports findings to Linear—fixing the problem before a human even notices.",
+        demoUrl: "https://accessibility-agent.vercel.app",
+        devpostUrl: "https://devpost.com/software/accessai-p1stlz",
+        hackathonAwards:
+          "Best use of the TinyFish Web Agent API, Best Yutori API Project (Agentic Orchestration Hack)",
       },
       {
         image: "/projects/engineer/science-of-everything/thumbnail.png",
@@ -158,6 +169,15 @@ export const characters: CharacterEntry[] = [
         slug: "show-and-tell",
         description: "Enabling emotion and expression for the hard of hearing. A project that bridges communication gaps.",
         demoUrl: "https://devpost.com/software/show-and-tell-capturing-emotion-in-sign-language",
+      },
+      {
+        image: "/projects/engineer/enable/thumbnail.png",
+        title: "Enable",
+        subtitle: "Prosthetic development in the comfort of your own home",
+        content: "",
+        slug: "enable",
+        description: "Enabling prosthetic development in the comfort of your own home. Making accessible medical device technology for amputees.",
+        demoUrl: "https://devpost.com/software/enable-automated-generation-of-prosthetic-devices",
       },
       {
         image: "/projects/engineer/spotter/thumbnail.jpeg",
@@ -190,6 +210,8 @@ export const characters: CharacterEntry[] = [
         slug: "freeppekc",
         description: "Medical non-profit supplying 3D-printed equipment to healthcare workers. Supporting frontline workers with accessible medical equipment.",
         demoUrl: "https://freeppekc.wixsite.com/freeppekc",
+        demoLabel: "View Website",
+        externalLinkOnly: true,
       },
     ],
   },

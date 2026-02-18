@@ -12,6 +12,7 @@ import { uiStrings } from "@/app/data/content";
 
 type StageSelectionScreenProps = {
   ethans: Ethan[];
+  initialCharacterIndex?: number | null;
   onSelect: (ethan: Ethan) => void;
 };
 
@@ -22,13 +23,34 @@ type AnimationState = {
   phase: "idle" | "animating";
 };
 
-export default function StageSelectionScreen({ ethans, onSelect }: StageSelectionScreenProps) {
+export default function StageSelectionScreen({
+  ethans,
+  initialCharacterIndex,
+  onSelect,
+}: StageSelectionScreenProps) {
   const [animState, setAnimState] = useState<AnimationState>({
     outgoingIndex: null,
-    incomingIndex: 0,
+    incomingIndex:
+      initialCharacterIndex != null && initialCharacterIndex >= 0
+        ? Math.min(initialCharacterIndex, ethans.length - 1)
+        : 0,
     direction: "right",
     phase: "idle",
   });
+
+  useEffect(() => {
+    if (
+      initialCharacterIndex != null &&
+      initialCharacterIndex >= 0 &&
+      initialCharacterIndex < ethans.length &&
+      animState.incomingIndex !== initialCharacterIndex
+    ) {
+      setAnimState((prev) => ({
+        ...prev,
+        incomingIndex: initialCharacterIndex,
+      }));
+    }
+  }, [initialCharacterIndex, ethans.length]);
   const [isSmallScreen, setIsSmallScreen] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 639px)").matches;
