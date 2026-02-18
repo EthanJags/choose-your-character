@@ -277,6 +277,7 @@ export default function ProjectsScreen({
         count={projects.length}
         activeIndex={currentIndex}
         color={ethan.secondaryColor}
+        backgroundColor={ethan.color}
         onDotClick={navigateTo}
       />
     </div>
