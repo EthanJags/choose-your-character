@@ -128,6 +128,18 @@ export const characters: CharacterEntry[] = [
         externalLinkOnly: true,
       },
       {
+        image: "/projects/engineer/beat-the-market/thumbnail.png",
+        title: "Beat the Market",
+        subtitle: "Prediction Market betting game",
+        content: "",
+        slug: "beat-the-market",
+        description:
+          "Test your prediction skills against real market data. A game where you predict market outcomes and compete on the leaderboard.",
+        demoUrl: "https://beatthemarket.xyz/",
+        demoLabel: "Play Now",
+        externalLinkOnly: true,
+      },
+      {
         image: "/projects/engineer/scribble-ai/thumbnail.jpg",
         title: "Scribble AI",
         subtitle: "The simplest way to generate text using AI",
