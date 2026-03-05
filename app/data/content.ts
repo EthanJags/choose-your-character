@@ -82,7 +82,7 @@ export const characters: CharacterEntry[] = [
       {
         image: "/projects/adventure/free-diving/thumbnail.webp",
         title: "Free Diving",
-        subtitle: "Exploring the depths on a single breath",
+        subtitle: "Dove 70 feet down on a single breath",
         content: "",
         slug: "free-diving",
         description: "Exploring underwater worlds on a single breath. Training and diving in various locations.",

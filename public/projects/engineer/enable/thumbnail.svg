@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="laser" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(56, 189, 248, 0)" />
+      <stop offset="80%" stop-color="rgba(56, 189, 248, 0.4)" />
+      <stop offset="100%" stop-color="rgba(56, 189, 248, 0)" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pulse {
+      0% { r: 6px; opacity: 0.5; }
+      50% { r: 10px; opacity: 1; }
+      100% { r: 6px; opacity: 0.5; }
+    }
+    @keyframes pulseLarge {
+      0% { r: 12px; opacity: 0.5; }
+      50% { r: 18px; opacity: 1; }
+      100% { r: 12px; opacity: 0.5; }
+    }
+    @keyframes scan {
+      0% { transform: translateX(-200px); }
+      100% { transform: translateX(1800px); }
+    }
+    @keyframes finger1 {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(15deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes finger2 {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(20deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    .pulse-node {
+      animation: pulse 2s infinite ease-in-out;
+    }
+    .pulse-node-large {
+      animation: pulseLarge 2.5s infinite ease-in-out;
+    }
+    .scanner {
+      animation: scan 3s infinite linear;
+    }
+    .arm-group {
+      animation: float 4s infinite ease-in-out;
+    }
+    .f1 {
+      animation: finger1 2.5s infinite ease-in-out;
+      transform-origin: 1050px 350px;
+    }
+    .f2 {
+      animation: finger2 2.2s infinite ease-in-out;
+      transform-origin: 1020px 420px;
+    }
+    .f3 {
+      animation: finger1 2.8s infinite ease-in-out;
+      transform-origin: 980px 480px;
+    }
+    .f4 {
+      animation: finger2 2.4s infinite ease-in-out;
+      transform-origin: 940px 530px;
+    }
+    .thumb {
+      animation: finger1 3s infinite ease-in-out;
+      transform-origin: 850px 680px;
+    }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bg)" />
+
+  <!-- Grid lines -->
+  <g stroke="#334155" stroke-width="1" opacity="0.5">
+    <path d="M0,150 L1600,150 M0,300 L1600,300 M0,450 L1600,450 M0,600 L1600,600 M0,750 L1600,750" />
+    <path d="M200,0 L200,900 M400,0 L400,900 M600,0 L600,900 M800,0 L800,900 M1000,0 L1000,900 M1200,0 L1200,900 M1400,0 L1400,900" />
+    <circle cx="800" cy="450" r="300" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="10, 10" />
+    <circle cx="800" cy="450" r="450" fill="none" stroke="#334155" stroke-width="1" stroke-dasharray="5, 15" />
+  </g>
+
+  <g class="arm-group">
+    <!-- Wires / Cables behind arm -->
+    <path d="M 300 700 Q 500 550 720 570" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" />
+    <path d="M 280 680 Q 480 520 700 520" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+    <path d="M 250 660 Q 450 490 600 500" fill="none" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" />
+
+    <!-- Forearm Base -->
+    <path d="M 200 650 L 600 500 L 750 550 L 400 750 Z" fill="#475569" stroke="#94a3b8" stroke-width="4" stroke-linejoin="round" />
+    <path d="M 220 650 L 600 520 L 730 560 L 400 730 Z" fill="#334155" />
+    
+    <!-- Forearm plating details -->
+    <path d="M 300 630 L 550 535 L 560 550 L 310 650 Z" fill="#64748b" />
+    <path d="M 350 670 L 600 575 L 610 590 L 360 690 Z" fill="#64748b" />
+
+    <!-- Wrist joints -->
+    <circle cx="750" cy="550" r="35" fill="#94a3b8" />
+    <circle cx="750" cy="550" r="20" fill="#cbd5e1" />
+    <circle cx="750" cy="550" r="15px" fill="#0ea5e9" filter="url(#glow)" class="pulse-node-large" />
+    
+    <circle cx="600" cy="500" r="30" fill="#94a3b8" />
+    <circle cx="600" cy="500" r="18" fill="#cbd5e1" />
+    <circle cx="600" cy="500" r="12px" fill="#0ea5e9" filter="url(#glow)" class="pulse-node-large" style="animation-delay: 0.5s;" />
+
+    <!-- Palm -->
+    <path d="M 750 550 L 950 450 L 1050 550 L 850 680 Z" fill="#475569" stroke="#94a3b8" stroke-width="4" stroke-linejoin="round" />
+    <path d="M 770 550 L 950 470 L 1030 550 L 850 660 Z" fill="#334155" />
+    
+    <!-- Palm plating -->
+    <path d="M 820 550 L 920 500 L 960 540 L 860 590 Z" fill="#64748b" />
+    <circle cx="890" cy="545" r="25" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
+    <circle cx="890" cy="545" r="8px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 1.5s;" />
+
+    <!-- Finger 1 (Index) -->
+    <g class="f1">
+      <path d="M 1050 350 L 1200 300 L 1220 330 L 1070 380 Z" fill="#64748b" stroke="#cbd5e1" stroke-width="3" />
+      <circle cx="1050" cy="350" r="22" fill="#94a3b8" />
+      <circle cx="1050" cy="350" r="8px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 0.2s;" />
+      
+      <!-- Knuckle 2 -->
+      <circle cx="1200" cy="300" r="18" fill="#94a3b8" />
+      <path d="M 1200 300 L 1320 280 L 1330 300 L 1210 320 Z" fill="#94a3b8" stroke="#cbd5e1" stroke-width="3" />
+    </g>
+
+    <!-- Finger 2 (Middle) -->
+    <g class="f2">
+      <path d="M 1020 420 L 1180 380 L 1200 410 L 1040 450 Z" fill="#475569" stroke="#94a3b8" stroke-width="3" />
+      <circle cx="1020" cy="420" r="22" fill="#94a3b8" />
+      <circle cx="1020" cy="420" r="8px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 0.4s;" />
+      
+      <!-- Knuckle 2 -->
+      <circle cx="1180" cy="380" r="18" fill="#94a3b8" />
+      <path d="M 1180 380 L 1310 370 L 1320 395 L 1190 405 Z" fill="#64748b" stroke="#94a3b8" stroke-width="3" />
+    </g>
+
+    <!-- Finger 3 (Ring) -->
+    <g class="f3">
+      <path d="M 980 480 L 1120 460 L 1140 490 L 1000 510 Z" fill="#334155" stroke="#64748b" stroke-width="3" />
+      <circle cx="980" cy="480" r="20" fill="#64748b" />
+      <circle cx="980" cy="480" r="8px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 0.6s;" />
+      
+      <!-- Knuckle 2 -->
+      <circle cx="1120" cy="460" r="18" fill="#64748b" />
+      <path d="M 1120 460 L 1240 465 L 1250 490 L 1130 485 Z" fill="#475569" stroke="#64748b" stroke-width="3" />
+    </g>
+
+    <!-- Finger 4 (Pinky) -->
+    <g class="f4">
+      <path d="M 940 530 L 1050 540 L 1060 565 L 950 555 Z" fill="#1e293b" stroke="#475569" stroke-width="3" />
+      <circle cx="940" cy="530" r="18" fill="#475569" />
+      <circle cx="940" cy="530" r="6px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 0.8s;" />
+      
+      <!-- Knuckle 2 -->
+      <circle cx="1050" cy="540" r="15" fill="#475569" />
+      <path d="M 1050 540 L 1150 560 L 1160 580 L 1060 560 Z" fill="#334155" stroke="#475569" stroke-width="3" />
+    </g>
+
+    <!-- Thumb -->
+    <g class="thumb">
+      <path d="M 850 680 L 980 750 L 1000 720 L 870 650 Z" fill="#475569" stroke="#94a3b8" stroke-width="3" />
+      <circle cx="850" cy="680" r="25" fill="#94a3b8" />
+      <circle cx="850" cy="680" r="10px" fill="#38bdf8" filter="url(#glow)" class="pulse-node" style="animation-delay: 1s;" />
+      
+      <circle cx="980" cy="750" r="22" fill="#cbd5e1" />
+      <path d="M 980 750 L 1100 800 L 1110 770 L 990 720 Z" fill="#64748b" stroke="#94a3b8" stroke-width="3" />
+    </g>
+  </g>
+
+  <!-- Scanner line overlay -->
+  <g class="scanner">
+    <rect x="0" y="0" width="150" height="900" fill="url(#laser)" />
+    <line x1="150" y1="0" x2="150" y2="900" stroke="#38bdf8" stroke-width="4" filter="url(#glow)" />
+    <!-- Scanning particles -->
+    <circle cx="150" cy="200" r="3" fill="#fff" filter="url(#glow)" />
+    <circle cx="150" cy="400" r="4" fill="#fff" filter="url(#glow)" />
+    <circle cx="150" cy="650" r="2" fill="#fff" filter="url(#glow)" />
+    <circle cx="150" cy="800" r="5" fill="#fff" filter="url(#glow)" />
+  </g>
+
+  <!-- Title / Overlay Text -->
+  <text x="80" y="100" font-family="monospace" font-size="36" font-weight="bold" fill="#38bdf8" letter-spacing="4">ENABLE</text>
+  <text x="80" y="140" font-family="monospace" font-size="22" fill="#94a3b8" letter-spacing="2">PROSTHETIC DEVELOPMENT_</text>
+  
+  <text x="1350" y="820" font-family="monospace" font-size="18" fill="#64748b" letter-spacing="2">SYS.VER. 4.2.1</text>
+  <text x="1350" y="850" font-family="monospace" font-size="18" fill="#38bdf8" letter-spacing="2" filter="url(#glow)">CALIBRATION [OK]</text>
+
+</svg>
