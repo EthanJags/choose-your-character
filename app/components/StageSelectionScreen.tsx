@@ -296,6 +296,7 @@ export default function StageSelectionScreen({
         alt="Mountain"
         width={2038}
         height={916}
+        priority
       />
       <div className="absolute inset-0 bg-black/40" />
 
@@ -306,6 +307,7 @@ export default function StageSelectionScreen({
         width={1939}
         height={592}
         className="hidden lg:block absolute left-0 top-[15vh] -translate-x-1/4 z-5 w-[40vw] h-auto opacity-80"
+        priority
       />
       <Image
         src="/right cloud.png"
@@ -313,6 +315,7 @@ export default function StageSelectionScreen({
         width={1939}
         height={592}
         className="hidden lg:block absolute right-0 top-[15vh] translate-x-1/3 z-5 w-[40vw] h-auto opacity-80"
+        priority
       />
       {activeTab === "select" && (
         <>
@@ -386,6 +389,7 @@ export default function StageSelectionScreen({
                 width={431}
                 height={721}
                 className="w-auto h-[60vh] max-w-none"
+                priority
               />
               <Image
                 src={ethan.banner}
@@ -393,6 +397,7 @@ export default function StageSelectionScreen({
                 width={431}
                 height={721}
                 className="h-auto w-full max-w-none absolute z-20 scale-110 translate-y-[12vh]"
+                priority
               />
               <h1 className="text-[4vh] absolute text-center uppercase z-20 scale-110 whitespace-nowrap translate-y-[11.5vh]">
                 The {ethan.name}

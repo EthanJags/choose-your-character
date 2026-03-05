@@ -18,9 +18,9 @@ export default function EthanPreloader() {
     >
       {characters.map((c) => (
         <span key={c.id} style={{ display: "contents" }}>
-          <Image src={c.image} alt="" width={431} height={721} />
-          <Image src={c.banner} alt="" width={431} height={721} />
-          <Image src={c.titleImage} alt="" width={431} height={721} />
+          <Image src={c.image} alt="" width={431} height={721} priority />
+          <Image src={c.banner} alt="" width={431} height={721} priority />
+          <Image src={c.titleImage} alt="" width={431} height={721} priority />
         </span>
       ))}
     </div>

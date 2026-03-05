@@ -17,10 +17,12 @@ function ProjectSlide({
   project,
   secondaryColor,
   projectHref,
+  priority = false,
 }: {
   project: Project;
   secondaryColor: string;
   projectHref: string;
+  priority?: boolean;
 }) {
   const cardHref =
     project.externalLinkOnly && project.demoUrl
@@ -53,6 +55,7 @@ function ProjectSlide({
             alt={project.title}
             fill
             className="object-cover"
+            priority={priority}
           />
           </div>
         </div>
@@ -268,6 +271,7 @@ export default function ProjectsScreen({
             project={project}
             secondaryColor={ethan.secondaryColor}
             projectHref={`/project/${ethan.slug}/${project.slug}`}
+            priority={i === currentIndex}
           />
         ))}
       </div>
