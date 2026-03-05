@@ -82,7 +82,7 @@ function ProjectSlide({
           {project.subtitle}
         </AutoFitText>
       </Link>
-      {(project.demoUrl || project.devpostUrl) && (
+      {(project.demoUrl || project.devpostUrl) && !project.externalLinkOnly && (
         <div className="flex flex-wrap justify-center gap-4 mt-4">
           {project.demoUrl && (
             <a
