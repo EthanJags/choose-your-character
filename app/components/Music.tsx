@@ -29,17 +29,9 @@ function getMusicForScreen(screen: Screen, character: Ethan | null): string {
 export default function Music({ screen, selectedCharacter }: MusicProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [isSoundOn, setIsSoundOn] = useState(true);
+  const [isSoundOn, setIsSoundOn] = useState(false);
   const currentTrackRef = useRef<string>("");
   const hasUserInteracted = useRef(false);
-
-  // Initialize sound state from localStorage
-  useEffect(() => {
-    const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference !== null) {
-      setIsSoundOn(savedPreference === "true");
-    }
-  }, []);
 
   // Listen to sound toggle events
   useEffect(() => {

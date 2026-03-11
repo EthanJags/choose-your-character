@@ -1,16 +1,36 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export default function SoundToggle() {
-  const [isSoundOn, setIsSoundOn] = useState(true);
+  const [isSoundOn, setIsSoundOn] = useState(false);
+  const hasAutoEnabled = useRef(false);
 
+  // Start muted; on first user interaction, auto-enable sound
   useEffect(() => {
-    // Store sound preference in localStorage
     const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference !== null) {
-      setIsSoundOn(savedPreference === "true");
-    }
+    // If user explicitly disabled sound, respect that
+    if (savedPreference === "false") return;
+
+    const handleInteraction = () => {
+      if (!hasAutoEnabled.current) {
+        hasAutoEnabled.current = true;
+        setIsSoundOn(true);
+      }
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("keydown", handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
+    };
+
+    document.addEventListener("click", handleInteraction);
+    document.addEventListener("keydown", handleInteraction);
+    document.addEventListener("touchstart", handleInteraction);
+
+    return () => {
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("keydown", handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
+    };
   }, []);
 
   useEffect(() => {

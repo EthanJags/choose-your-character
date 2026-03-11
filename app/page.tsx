@@ -46,6 +46,14 @@ function HomeContent() {
       ? "title"
       : "selection";
 
+  useEffect(() => {
+    const themeColor = selectedEthan ? selectedEthan.color : "#ffffff";
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute("content", themeColor);
+    }
+  }, [selectedEthan]);
+
   return (
     <div className="relative overflow-hidden min-h-screen">
       <Music screen={currentScreen} selectedCharacter={selectedEthan} />

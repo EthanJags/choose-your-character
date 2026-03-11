@@ -51,15 +51,8 @@ export default function StageSelectionScreen({
       }));
     }
   }, [initialCharacterIndex, ethans.length]);
-  const [isSmallScreen, setIsSmallScreen] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 639px)").matches;
-  });
-  const [isSoundOn, setIsSoundOn] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const savedPreference = localStorage.getItem("soundEnabled");
-    return savedPreference === null ? true : savedPreference === "true";
-  });
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"select" | "about">("select");
   const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
@@ -77,6 +70,7 @@ export default function StageSelectionScreen({
   // Detect screen size below sm breakpoint (640px)
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
+    setIsSmallScreen(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
       setIsSmallScreen(e.matches);
@@ -84,6 +78,14 @@ export default function StageSelectionScreen({
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Read saved sound preference on mount
+  useEffect(() => {
+    const savedPreference = localStorage.getItem("soundEnabled");
+    if (savedPreference !== null) {
+      setIsSoundOn(savedPreference === "true");
+    }
   }, []);
 
   // Listen to sound toggle events

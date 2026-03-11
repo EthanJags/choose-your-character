@@ -183,6 +183,10 @@ export default function ProjectsScreen({
       touchStartY.current = e.touches[0].clientY;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
       if (isAnimating) return;
       const delta = touchStartY.current - e.changedTouches[0].clientY;
@@ -194,9 +198,11 @@ export default function ProjectsScreen({
     };
 
     el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: false });
     el.addEventListener("touchend", handleTouchEnd, { passive: true });
     return () => {
       el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
       el.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isAnimating, currentIndex, navigateTo]);

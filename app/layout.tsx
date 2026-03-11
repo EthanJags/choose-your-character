@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Londrina_Solid, Caveat, Patrick_Hand } from "next/font/google";
 import "./globals.css";
 import EthanPreloader from "./components/EthanPreloader";
@@ -30,6 +30,13 @@ const patrickHand = Patrick_Hand({
   weight: "400",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   title: "Ethan's Portfolio",
