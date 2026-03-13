@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import posthog from "posthog-js";
 
 export default function SoundToggle() {
   const [isSoundOn, setIsSoundOn] = useState(false);
@@ -42,7 +43,10 @@ export default function SoundToggle() {
   }, [isSoundOn]);
 
   const toggleSound = useCallback(() => {
-    setIsSoundOn((prev) => !prev);
+    setIsSoundOn((prev) => {
+      posthog.capture("sound_toggled", { enabled: !prev });
+      return !prev;
+    });
   }, []);
 
   useEffect(() => {

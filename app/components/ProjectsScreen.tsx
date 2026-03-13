@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import posthog from "posthog-js";
 import AutoFitText from "./AutoFitText";
 import DotIndicator from "./DotIndicator";
 import type { Ethan, Project } from "@/app/page";
@@ -17,11 +18,15 @@ function ProjectSlide({
   project,
   secondaryColor,
   projectHref,
+  characterName,
+  characterSlug,
   priority = false,
 }: {
   project: Project;
   secondaryColor: string;
   projectHref: string;
+  characterName: string;
+  characterSlug: string;
   priority?: boolean;
 }) {
   const cardHref =
@@ -36,6 +41,25 @@ function ProjectSlide({
         target={project.externalLinkOnly ? "_blank" : undefined}
         rel={project.externalLinkOnly ? "noopener noreferrer" : undefined}
         className="flex flex-col items-center w-full max-w-[1141px] cursor-pointer hover:opacity-95 transition-opacity"
+        onClick={() => {
+          if (project.externalLinkOnly) {
+            posthog.capture("project_link_clicked", {
+              project_title: project.title,
+              project_slug: project.slug,
+              character_name: characterName,
+              character_slug: characterSlug,
+              link_type: "demo",
+              url: project.demoUrl,
+            });
+          } else {
+            posthog.capture("project_detail_opened", {
+              project_title: project.title,
+              project_slug: project.slug,
+              character_name: characterName,
+              character_slug: characterSlug,
+            });
+          }
+        }}
       >
         <div
           className="w-full max-w-[1141px]"
@@ -99,6 +123,16 @@ function ProjectSlide({
                 fontWeight: 900,
                 fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
               }}
+              onClick={() => {
+                posthog.capture("project_link_clicked", {
+                  project_title: project.title,
+                  project_slug: project.slug,
+                  character_name: characterName,
+                  character_slug: characterSlug,
+                  link_type: "demo",
+                  url: project.demoUrl,
+                });
+              }}
             >
               {project.demoLabel ?? "View demo"}
             </a>
@@ -114,6 +148,16 @@ function ProjectSlide({
                 fontFamily: "var(--font-londrina-solid), sans-serif",
                 fontWeight: 900,
                 fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
+              }}
+              onClick={() => {
+                posthog.capture("project_link_clicked", {
+                  project_title: project.title,
+                  project_slug: project.slug,
+                  character_name: characterName,
+                  character_slug: characterSlug,
+                  link_type: "devpost",
+                  url: project.devpostUrl,
+                });
               }}
             >
               {project.devpostLabel ?? "View on Devpost"}
@@ -150,9 +194,16 @@ export default function ProjectsScreen({
       if (wrapped === currentIndex) return;
       setIsAnimating(true);
       setCurrentIndex(wrapped);
+      posthog.capture("project_slide_viewed", {
+        project_title: projects[wrapped].title,
+        project_slug: projects[wrapped].slug,
+        character_name: ethan.name,
+        character_slug: ethan.slug,
+        slide_index: wrapped,
+      });
       setTimeout(() => setIsAnimating(false), 700);
     },
-    [isAnimating, currentIndex, projects.length]
+    [isAnimating, currentIndex, projects, ethan]
   );
 
   // Wheel scroll-jacking
@@ -277,6 +328,8 @@ export default function ProjectsScreen({
             project={project}
             secondaryColor={ethan.secondaryColor}
             projectHref={`/project/${ethan.slug}/${project.slug}`}
+            characterName={ethan.name}
+            characterSlug={ethan.slug}
             priority={i === currentIndex}
           />
         ))}

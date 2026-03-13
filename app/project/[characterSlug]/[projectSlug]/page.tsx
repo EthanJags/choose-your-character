@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { characters } from "@/app/data/content";
 import AutoFitText from "@/app/components/AutoFitText";
+import ProjectExternalLinks from "./ProjectExternalLinks";
 
 const IMAGE_EXTENSIONS = [".jpeg", ".jpg", ".png", ".webp", ".JPG"];
 
@@ -88,36 +89,17 @@ export default async function ProjectPage({
 
       <main className="max-w-5xl mx-auto px-4 md:px-8 pb-20">
         {((project.demoUrl && project.demoLabel) || project.devpostUrl) && (
-          <div className="flex flex-wrap gap-4 mb-8">
-            {project.demoUrl && project.demoLabel && (
-              <a
-                href={project.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
-                style={{
-                  color: character.secondaryColor,
-                  fontFamily: "var(--font-londrina-solid), sans-serif",
-                }}
-              >
-                {project.demoLabel}
-              </a>
-            )}
-            {project.devpostUrl && (
-              <a
-                href={project.devpostUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
-                style={{
-                  color: character.secondaryColor,
-                  fontFamily: "var(--font-londrina-solid), sans-serif",
-                }}
-              >
-                {project.devpostLabel ?? "View on Devpost"}
-              </a>
-            )}
-          </div>
+          <ProjectExternalLinks
+            projectTitle={project.title}
+            projectSlug={projectSlug}
+            characterName={character.name}
+            characterSlug={characterSlug}
+            secondaryColor={character.secondaryColor}
+            demoUrl={project.demoUrl}
+            demoLabel={project.demoLabel}
+            devpostUrl={project.devpostUrl}
+            devpostLabel={project.devpostLabel}
+          />
         )}
         <div className="mb-12">
           <AutoFitText

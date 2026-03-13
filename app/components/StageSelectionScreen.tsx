@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import posthog from "posthog-js";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
 import AboutSection from "./AboutSection";
@@ -224,6 +225,11 @@ export default function StageSelectionScreen({
           const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
           selectAudio.play().catch(() => {});
         }
+        posthog.capture("character_selected", {
+          character_name: ethans[animState.incomingIndex].name,
+          character_slug: ethans[animState.incomingIndex].slug,
+          selection_method: "keyboard",
+        });
         onSelect(ethans[animState.incomingIndex]);
       }
     };
@@ -238,6 +244,11 @@ export default function StageSelectionScreen({
       const audio = new Audio("/sound-effects/menuselect.mov");
       audio.currentTime = 0.15;
       audio.play();
+    }
+    if (tab === "about") {
+      posthog.capture("about_tab_viewed", {
+        previous_tab: activeTab,
+      });
     }
     setActiveTab(tab);
   };
@@ -373,6 +384,11 @@ export default function StageSelectionScreen({
                       // Ignore autoplay errors
                     });
                   }
+                  posthog.capture("character_selected", {
+                    character_name: ethan.name,
+                    character_slug: ethan.slug,
+                    selection_method: "click",
+                  });
                   onSelect(ethan);
                 }
               }}

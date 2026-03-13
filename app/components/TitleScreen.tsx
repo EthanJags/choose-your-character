@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import posthog from "posthog-js";
 import type { Ethan } from "@/app/page";
 import { uiStrings } from "@/app/data/content";
 import Arrow from "./Arrow";
@@ -51,8 +52,12 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
 
     const handleEnter = useCallback(() => {
         if (isExiting) return;
+        posthog.capture("character_title_entered", {
+            character_name: ethan.name,
+            character_slug: ethan.slug,
+        });
         onEnter();
-    }, [onEnter, isExiting]);
+    }, [onEnter, isExiting, ethan]);
 
         useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
