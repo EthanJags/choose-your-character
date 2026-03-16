@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Londrina_Solid, Caveat, Patrick_Hand } from "next/fo
 import "./globals.css";
 import EthanPreloader from "./components/EthanPreloader";
 import SoundToggle from "./components/SoundToggle";
+import { PostHogProvider } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -77,9 +78,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${londrinaSolid.variable} ${caveat.variable} ${patrickHand.variable} antialiased`}
       >
-        <EthanPreloader />
-        {children}
-        <SoundToggle />
+        <PostHogProvider>
+          <EthanPreloader />
+          {children}
+          <SoundToggle />
+        </PostHogProvider>
       </body>
     </html>
   );
