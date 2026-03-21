@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Londrina_Solid, Caveat, Patrick_Hand } from "next/fo
 import "./globals.css";
 import EthanPreloader from "./components/EthanPreloader";
 import SoundToggle from "./components/SoundToggle";
+import ClickForSoundTooltip from "./components/ClickForSoundTooltip";
 import { PostHogProvider } from "./providers";
 
 const geistSans = Geist({
@@ -82,6 +83,7 @@ export default function RootLayout({
           <EthanPreloader />
           {children}
           <SoundToggle />
+          <ClickForSoundTooltip />
         </PostHogProvider>
       </body>
     </html>
