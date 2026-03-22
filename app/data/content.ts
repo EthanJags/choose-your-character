@@ -120,6 +120,17 @@ export const characters: CharacterEntry[] = [
     titleImage: "/engineer-title.png",
     projects: [
       {
+        image: "/projects/engineer/sketchy-business/thumbnail.png",
+        title: "Sketchy Business",
+        subtitle: "A fast-paced drawing and guessing game",
+        content: "",
+        slug: "sketchy-business",
+        description: "A multiplayer drawing and guessing game where players sketch prompts and race to guess what others are drawing.",
+        demoUrl: "https://quip-quest.vercel.app",
+        demoLabel: "Play Now",
+        externalLinkOnly: true,
+      },
+      {
         image: "/projects/engineer/access-ai/thumbnail.png",
         title: "Access AI",
         subtitle: "Your 24/7 autonomous accessibility auditor",
