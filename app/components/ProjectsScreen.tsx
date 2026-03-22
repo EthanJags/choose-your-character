@@ -1,348 +1,124 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import posthog from "posthog-js";
-import AutoFitText from "./AutoFitText";
-import DotIndicator from "./DotIndicator";
 import type { Ethan, Project } from "@/app/page";
 
-type ProjectsScreenProps = {
-  ethan: Ethan;
-  initialProjectSlug?: string;
-  onBack: () => void;
-};
-
-function ProjectSlide({
+function PolaroidCard({
   project,
-  secondaryColor,
-  projectHref,
-  characterName,
-  characterSlug,
-  priority = false,
+  ethan,
+  index,
 }: {
   project: Project;
-  secondaryColor: string;
-  projectHref: string;
-  characterName: string;
-  characterSlug: string;
-  priority?: boolean;
+  ethan: Ethan;
+  index: number;
 }) {
-  const cardHref =
+
+
+  const href =
     project.externalLinkOnly && project.demoUrl
       ? project.demoUrl
-      : projectHref;
+      : `/project/${ethan.slug}/${project.slug}`;
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center pl-8 pr-8 md:pl-16 md:pr-16 sm:pr-20 md:pr-24 py-20 sm:py-8">
-      <Link
-        href={cardHref}
-        target={project.externalLinkOnly ? "_blank" : undefined}
-        rel={project.externalLinkOnly ? "noopener noreferrer" : undefined}
-        className="flex flex-col items-center w-full max-w-[1141px] cursor-pointer hover:opacity-95 transition-opacity"
-        onClick={() => {
-          if (project.externalLinkOnly) {
-            posthog.capture("project_link_clicked", {
-              project_title: project.title,
-              project_slug: project.slug,
-              character_name: characterName,
-              character_slug: characterSlug,
-              link_type: "demo",
-              url: project.demoUrl,
-            });
-          } else {
-            posthog.capture("project_detail_opened", {
-              project_title: project.title,
-              project_slug: project.slug,
-              character_name: characterName,
-              character_slug: characterSlug,
-            });
+    <Link
+      href={href}
+      target={project.externalLinkOnly ? "_blank" : undefined}
+      rel={project.externalLinkOnly ? "noopener noreferrer" : undefined}
+      className="group block"
+      onClick={() => {
+        posthog.capture(
+          project.externalLinkOnly
+            ? "project_link_clicked"
+            : "project_detail_opened",
+          {
+            project_title: project.title,
+            project_slug: project.slug,
+            character_name: ethan.name,
+            character_slug: ethan.slug,
+            ...(project.externalLinkOnly
+              ? { link_type: "demo", url: project.demoUrl }
+              : {}),
           }
-        }}
-      >
-        <div
-          className="w-full max-w-[1141px]"
-          style={{ aspectRatio: "1141/652" }}
-        >
-          <div
-            className="relative mx-auto h-full overflow-hidden rounded-sm"
+        );
+      }}
+    >
+        <div className="bg-white p-3 pb-4 md:p-4 md:pb-5 shadow-[4px_6px_16px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out group-hover:-translate-y-2 group-hover:shadow-[6px_12px_28px_rgba(0,0,0,0.3)] group-hover:scale-[1.03]">
+          <div className="w-full overflow-hidden bg-gray-100">
+            <Image
+              src={project.image}
+              alt={project.title}
+              width={800}
+              height={600}
+              className="w-full h-auto block"
+              sizes="(max-width: 768px) 85vw, (max-width: 1024px) 42vw, 28vw"
+            />
+          </div>
+          <p
+            className="mt-3 text-left text-gray-800 truncate uppercase"
             style={{
-              aspectRatio: project.aspectRatio ?? "1141/652",
-              width: project.aspectRatio ? "auto" : "100%",
-              maxWidth: "100%",
-              boxShadow: "0px 20px 26.6px 6px rgba(0,0,0,0.25)",
+              fontFamily: "var(--font-londrina-solid), sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(1.5rem, 2.5vw, 2.1rem)",
             }}
           >
-            <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            className="object-cover"
-            priority={priority}
-          />
-          </div>
-        </div>
-        <AutoFitText
-          as="h2"
-          className="uppercase text-center mt-6"
-          baseFontSize="clamp(2rem, 8vw, 8rem)"
-          style={{
-            color: secondaryColor,
-            fontFamily: "var(--font-londrina-solid), sans-serif",
-            fontWeight: 900,
-            lineHeight: 1,
-          }}
-        >
-          {project.title}
-        </AutoFitText>
-        <AutoFitText
-          as="p"
-          className="text-center mt-2"
-          baseFontSize="clamp(1rem, 2.5vw, 2rem)"
-          style={{
-            color: secondaryColor,
-            fontFamily: "var(--font-londrina-solid), sans-serif",
-            fontWeight: 900,
-          }}
-        >
-          {project.subtitle}
-        </AutoFitText>
-      </Link>
-      {(project.demoUrl || project.devpostUrl) && !project.externalLinkOnly && (
-        <div className="flex flex-wrap justify-center gap-4 mt-4">
-          {project.demoUrl && (
-            <a
-              href={project.demoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="uppercase cursor-pointer hover:opacity-80 transition-opacity"
+            {project.title}
+          </p>
+          {project.subtitle && (
+            <p
+              className="text-left text-gray-500 font-normal"
               style={{
-                color: secondaryColor,
                 fontFamily: "var(--font-londrina-solid), sans-serif",
-                fontWeight: 900,
-                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
-              }}
-              onClick={() => {
-                posthog.capture("project_link_clicked", {
-                  project_title: project.title,
-                  project_slug: project.slug,
-                  character_name: characterName,
-                  character_slug: characterSlug,
-                  link_type: "demo",
-                  url: project.demoUrl,
-                });
+                fontSize: "clamp(1rem, 1.6vw, 1.25rem)",
+                fontWeight: 400,
               }}
             >
-              {project.demoLabel ?? "View demo"}
-            </a>
-          )}
-          {project.devpostUrl && (
-            <a
-              href={project.devpostUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="uppercase cursor-pointer hover:opacity-80 transition-opacity"
-              style={{
-                color: secondaryColor,
-                fontFamily: "var(--font-londrina-solid), sans-serif",
-                fontWeight: 900,
-                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
-              }}
-              onClick={() => {
-                posthog.capture("project_link_clicked", {
-                  project_title: project.title,
-                  project_slug: project.slug,
-                  character_name: characterName,
-                  character_slug: characterSlug,
-                  link_type: "devpost",
-                  url: project.devpostUrl,
-                });
-              }}
-            >
-              {project.devpostLabel ?? "View on Devpost"}
-            </a>
+              {project.subtitle}
+            </p>
           )}
         </div>
-      )}
-    </div>
+    </Link>
   );
 }
 
-export default function ProjectsScreen({
-  ethan,
-  initialProjectSlug,
-  onBack,
-}: ProjectsScreenProps) {
-  const initialIndex =
-    initialProjectSlug != null
-      ? ethan.projects.findIndex((p) => p.slug === initialProjectSlug)
-      : -1;
-  const [currentIndex, setCurrentIndex] = useState(
-    initialIndex >= 0 ? initialIndex : 0
-  );
-  const [isAnimating, setIsAnimating] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartY = useRef(0);
-  const projects = ethan.projects;
+const GALLERY_BG = "#EDE8DF";
 
-  const navigateTo = useCallback(
-    (index: number) => {
-      if (isAnimating) return;
-      const wrapped =
-        ((index % projects.length) + projects.length) % projects.length;
-      if (wrapped === currentIndex) return;
-      setIsAnimating(true);
-      setCurrentIndex(wrapped);
-      posthog.capture("project_slide_viewed", {
-        project_title: projects[wrapped].title,
-        project_slug: projects[wrapped].slug,
-        character_name: ethan.name,
-        character_slug: ethan.slug,
-        slide_index: wrapped,
-      });
-      setTimeout(() => setIsAnimating(false), 700);
-    },
-    [isAnimating, currentIndex, projects, ethan]
-  );
-
-  // Wheel scroll-jacking
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      if (isAnimating) return;
-      if (e.deltaY > 30) {
-        navigateTo(currentIndex + 1);
-      } else if (e.deltaY < -30) {
-        navigateTo(currentIndex - 1);
-      }
-    };
-
-    el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => el.removeEventListener("wheel", handleWheel);
-  }, [isAnimating, currentIndex, navigateTo]);
-
-  // Touch swipe
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (isAnimating) return;
-      const delta = touchStartY.current - e.changedTouches[0].clientY;
-      if (delta > 50) {
-        navigateTo(currentIndex + 1);
-      } else if (delta < -50) {
-        navigateTo(currentIndex - 1);
-      }
-    };
-
-    el.addEventListener("touchstart", handleTouchStart, { passive: true });
-    el.addEventListener("touchmove", handleTouchMove, { passive: false });
-    el.addEventListener("touchend", handleTouchEnd, { passive: true });
-    return () => {
-      el.removeEventListener("touchstart", handleTouchStart);
-      el.removeEventListener("touchmove", handleTouchMove);
-      el.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [isAnimating, currentIndex, navigateTo]);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        navigateTo(currentIndex + 1);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        navigateTo(currentIndex - 1);
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        onBack();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, navigateTo, onBack]);
-
+export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-screen overflow-hidden"
-      style={{ backgroundColor: ethan.color }}
-    >
-      {/* Back arrow - top left */}
-      <button
-        onClick={onBack}
-        className="absolute top-4 left-4 md:top-8 md:left-8 z-30 flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-        aria-label="Go back"
-        style={{ color: ethan.secondaryColor }}
-      >
+    <div className="relative">
+      {/* Wavy transition - overlaps bottom of title screen */}
+      <div className="relative -mt-28 md:-mt-36 z-20 pointer-events-none">
         <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
+          viewBox="0 0 1440 180"
+          preserveAspectRatio="none"
+          className="block w-full h-28 md:h-36"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-10 h-10 md:w-12 md:h-12 shrink-0"
         >
           <path
-            d="M15 18l-6-6 6-6"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
+            d="M0,80 C240,160 480,0 720,80 C960,160 1200,0 1440,80 L1440,180 L0,180 Z"
+            fill={GALLERY_BG}
           />
         </svg>
-        <span
-          className="uppercase font-semibold text-sm md:text-base"
-          style={{ fontFamily: "var(--font-londrina-solid), sans-serif" }}
-        >
-          Back to home
-        </span>
-      </button>
-
-      {/* Slides container */}
-      <div
-        className="w-full"
-        style={{
-          transform: `translateY(-${currentIndex * 100}vh)`,
-          transition: "transform 700ms cubic-bezier(0.65, 0, 0.35, 1)",
-        }}
-      >
-        {projects.map((project, i) => (
-          <ProjectSlide
-            key={i}
-            project={project}
-            secondaryColor={ethan.secondaryColor}
-            projectHref={`/project/${ethan.slug}/${project.slug}`}
-            characterName={ethan.name}
-            characterSlug={ethan.slug}
-            priority={i === currentIndex}
-          />
-        ))}
       </div>
 
-      {/* Dot indicator */}
-      <DotIndicator
-        count={projects.length}
-        activeIndex={currentIndex}
-        color={ethan.secondaryColor}
-        backgroundColor={ethan.color}
-        onDotClick={navigateTo}
-      />
+      {/* Gallery section */}
+      <section
+        className="relative z-20 px-8 md:px-16 lg:px-24 pt-8 pb-24 md:pt-12 md:pb-32"
+        style={{ backgroundColor: GALLERY_BG }}
+      >
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-10 lg:gap-12 max-w-[1200px] mx-auto">
+          {ethan.projects.map((project, i) => (
+            <div key={project.slug} className="mb-10 lg:mb-12 break-inside-avoid">
+              <PolaroidCard
+                project={project}
+                ethan={ethan}
+                index={i}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

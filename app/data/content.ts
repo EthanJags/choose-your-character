@@ -122,17 +122,14 @@ export const characters: CharacterEntry[] = [
       {
         image: "/projects/engineer/access-ai/thumbnail.png",
         title: "Access AI",
-        subtitle: "Your 24/7 autonomous accessibility auditor",
+        subtitle: "Best use of TinyFish and Yutori in Creative Corner hackathon",
         content: "",
         slug: "access-ai",
         description:
           "The internet is broken for 1.3 billion people. 96% of the top 1 million homepages fail basic accessibility standards. AccessAI autonomously browses like a visually impaired user, identifies violations, and exports findings to Linear—fixing the problem before a human even notices.",
-        demoUrl: "https://accessibility-agent.vercel.app",
+        demoUrl: "https://tryaccessai.com",
         demoLabel: "Try Product",
-        devpostUrl: "https://devpost.com/software/accessai-p1stlz",
-        devpostLabel: "View Demo",
-        hackathonAwards:
-          "Best use of the TinyFish Web Agent API, Best Yutori API Project (Agentic Orchestration Hack)",
+        externalLinkOnly: true,
       },
       {
         image: "/projects/engineer/science-of-everything/thumbnail.png",
@@ -148,7 +145,7 @@ export const characters: CharacterEntry[] = [
       {
         image: "/projects/engineer/interview-ai/thumbnail.png",
         title: "Interview AI",
-        subtitle: "AI-powered mock interview practice platform",
+        subtitle: "35+ Users, spread through word of mouth",
         content: "",
         slug: "interview-ai",
         description: "AI-powered mock interview practice platform. Sharpen your interview skills with realistic AI-driven technical and behavioral interviews.",
@@ -159,7 +156,7 @@ export const characters: CharacterEntry[] = [
       {
         image: "/projects/engineer/sound-search/thumbnail.png",
         title: "Sound Search",
-        subtitle: "AI-powered music similarity search",
+        subtitle: "50+ Users, spread through Berkeley clubs, music production tool",
         content: "",
         slug: "sound-search",
         description: "Search for sounds using AI-powered similarity matching. Find the perfect sound for your project.",
@@ -193,7 +190,7 @@ export const characters: CharacterEntry[] = [
       {
         image: "/projects/engineer/scribble-ai/thumbnail.jpg",
         title: "Scribble AI",
-        subtitle: "The simplest way to generate text using AI",
+        subtitle: "20,000+ Downloads, #4 Product of the Day on Product Hunt, $15,000 in grants awarded",
         content: "",
         slug: "scribble-ai",
         description: `Awards: Admitted to SkyDeck Pad-13 (Batch 16), 3rd Place in UC Launch Final Demo Day Spring 2023
@@ -210,7 +207,7 @@ Scribble AI provides a mobile interface to generate customized text in 20+ pre-b
       {
         image: "/projects/engineer/show-and-tell/thumbnail.png",
         title: "Show and Tell",
-        subtitle: "Enabling emotion and expression for the hard of hearing",
+        subtitle: "Treehacks Grand Prize Winner - Most Creative Hack and Best Team",
         aspectRatio: "1132/1608",
         content: "",
         slug: "show-and-tell",
@@ -221,7 +218,7 @@ Scribble AI provides a mobile interface to generate customized text in 20+ pre-b
       {
         image: "/projects/engineer/enable/thumbnail.png",
         title: "Enable",
-        subtitle: "Prosthetic development in the comfort of your own home",
+        subtitle: "Audience Choice and Best Use of OpenAI at Scale AI Hackathon",
         aspectRatio: "16/9",
         content: "",
         slug: "enable",

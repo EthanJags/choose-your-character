@@ -76,3 +76,12 @@ h1 {
     transform: translateX(0);
   }
 }
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

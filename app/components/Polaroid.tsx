@@ -14,8 +14,8 @@ type PolaroidProps = {
 
 export default function Polaroid({ image, title, description, className, style }: PolaroidProps) {
   return (
-    <div className={`z-10 h-[490px] w-[437px] bg-white p-4 shadow-[0_28px_60px_rgba(0,0,0,0.35)] ${className ?? ""}`} style={style}>
-      <div className="relative aspect-613/540 w-full overflow-hidden bg-neutral-100">
+    <div className={`z-10 h-[490px] w-[437px] bg-white p-2.5 shadow-[0_28px_60px_rgba(0,0,0,0.35)] ${className ?? ""}`} style={style}>
+      <div className="relative aspect-16/10 w-full overflow-hidden bg-neutral-100">
         <Image src={image} alt={title} fill className="object-cover" sizes="340px" />
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback } from "react";
 import Image from "next/image";
 import posthog from "posthog-js";
 import type { Ethan } from "@/app/page";
@@ -14,56 +14,19 @@ type TitleScreenProps = {
 };
 
 export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps) {
-    const [isExiting, setIsExiting] = useState(false);
-    const [isSoundOn, setIsSoundOn] = useState(true);
-
-    // Listen to sound toggle events
-    useEffect(() => {
-        const handleSoundToggle = (e: CustomEvent<{ enabled: boolean }>) => {
-            setIsSoundOn(e.detail.enabled);
-        };
-
-        window.addEventListener("soundToggle", handleSoundToggle as EventListener);
-        
-        // Initialize sound state from localStorage
-        const savedPreference = localStorage.getItem("soundEnabled");
-        if (savedPreference !== null) {
-            const enabled = savedPreference === "true";
-            setIsSoundOn(enabled);
-        }
-
-        return () => {
-            window.removeEventListener("soundToggle", handleSoundToggle as EventListener);
-        };
-    }, []);
-
-    const handleBack = useCallback(() => {
-        if (isSoundOn) {
-            const audio = new Audio("/sound-effects/drawer-closing.mov");
-            audio.play().catch(() => {
-                // Ignore autoplay errors
-            });
-        }
-        setIsExiting(true);
-        setTimeout(() => {
-            onBack();
-        }, 800);
-    }, [onBack, isSoundOn]);
-
     const handleEnter = useCallback(() => {
-        if (isExiting) return;
         posthog.capture("character_title_entered", {
             character_name: ethan.name,
             character_slug: ethan.slug,
         });
         onEnter();
-    }, [onEnter, isExiting, ethan]);
+    }, [onEnter, ethan]);
 
-        useEffect(() => {
+    useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "ArrowUp" || e.key === "Escape") {
                 e.preventDefault();
-                handleBack();
+                onBack();
             } else if (e.key === "Enter") {
                 e.preventDefault();
                 handleEnter();
@@ -72,53 +35,15 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [handleBack, handleEnter]);
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    const touchStartY = useRef(0);
-
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            if (isExiting) return;
-            if (e.deltaY < -50) handleBack();
-        };
-
-        const handleTouchStart = (e: TouchEvent) => {
-            touchStartY.current = e.touches[0].clientY;
-        };
-
-        const handleTouchEnd = (e: TouchEvent) => {
-            if (isExiting) return;
-            const deltaY = e.changedTouches[0].clientY - touchStartY.current;
-            if (deltaY < -50) handleBack();
-        };
-
-        el.addEventListener("wheel", handleWheel, { passive: true });
-        el.addEventListener("touchstart", handleTouchStart, { passive: true });
-        el.addEventListener("touchend", handleTouchEnd, { passive: true });
-        return () => {
-            el.removeEventListener("wheel", handleWheel);
-            el.removeEventListener("touchstart", handleTouchStart);
-            el.removeEventListener("touchend", handleTouchEnd);
-        };
-    }, [handleBack, isExiting]);
+    }, [onBack, handleEnter]);
 
     return (
         <div
-            ref={containerRef}
-            className="relative min-h-screen w-full h-screen overflow-hidden"
-            style={{
-                backgroundColor: ethan.color,
-                transform: isExiting ? "translateY(100vh)" : "translateY(0)",
-                transition: "transform 800ms ease-out",
-                animation: "slideUpFromBottom 800ms ease-out",
-            }}
+            className="relative min-h-screen w-full h-screen"
+            style={{ backgroundColor: ethan.color }}
         >
             <div className={ethan.slug === "artist" ? "artist-arrow-below-lg" : ""}>
-                <Arrow direction="up" color={ethan.thirdColor} onClick={handleBack} />
+                <Arrow direction="up" color={ethan.thirdColor} onClick={onBack} />
             </div>
             <Image src={'/cloud-long-header.png'} alt={'Clouds'} width={1939} height={592} className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-0 w-full" priority/>
             <div className={`absolute w-full left-0 top-[15%] md:top-[50%] md:-translate-y-1/2 z-10 ${ethan.slug === "artist" ? "artist-text-below-lg" : ""}`}>
@@ -138,15 +63,29 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
             </div>
             <Image src={ethan.titleImage} alt={ethan.name} width={431} height={721} className="absolute -bottom-[5%] lg:bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[10%] h-[70vh] sm:h-[70vh] md:h-[90vh] w-auto z-1" priority />
 
+            {/* Scroll indicator */}
+            <div
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce cursor-pointer"
+                onClick={handleEnter}
+            >
+                <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M6 9l6 6 6-6"
+                        stroke={ethan.secondaryColor}
+                        strokeWidth="3"
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
+                    />
+                </svg>
+            </div>
+
             <style jsx>{`
-                @keyframes slideUpFromBottom {
-                    from {
-                        transform: translateY(100vh);
-                    }
-                    to {
-                        transform: translateY(0);
-                    }
-                }
                 @media (max-width: 1023px) {
                     .artist-text-below-lg h1,
                     .artist-text-below-lg p {

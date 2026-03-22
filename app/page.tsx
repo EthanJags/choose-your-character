@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import TitleScreen from "./components/TitleScreen";
 import StageSelectionScreen from "./components/StageSelectionScreen";
@@ -20,31 +20,49 @@ function HomeContent() {
   const showProjectsParam = searchParams.get("projects");
   const characterIndex =
     charSlug != null ? characters.findIndex((c) => c.slug === charSlug) : -1;
-  const shouldShowProjects = showProjectsParam === "1" && characterIndex >= 0;
 
   const [selectedEthan, setSelectedEthan] = useState<Ethan | null>(() =>
-    shouldShowProjects ? characters[characterIndex] : null
+    characterIndex >= 0 ? characters[characterIndex] : null
   );
-  const [showProjects, setShowProjects] = useState(shouldShowProjects);
+  const [isExiting, setIsExiting] = useState(false);
   const [lastViewedCharacterIndex, setLastViewedCharacterIndex] = useState<
     number | null
   >(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Sound state for exit sound effect
+  const [isSoundOn, setIsSoundOn] = useState(true);
+  useEffect(() => {
+    const saved = localStorage.getItem("soundEnabled");
+    if (saved !== null) setIsSoundOn(saved === "true");
+    const handler = (e: Event) => {
+      setIsSoundOn((e as CustomEvent<{ enabled: boolean }>).detail.enabled);
+    };
+    window.addEventListener("soundToggle", handler);
+    return () => window.removeEventListener("soundToggle", handler);
+  }, []);
 
   useEffect(() => {
     if (charSlug && characterIndex >= 0) {
       setLastViewedCharacterIndex(characterIndex);
-      if (shouldShowProjects) {
+      if (!selectedEthan) {
         setSelectedEthan(characters[characterIndex]);
-        setShowProjects(true);
       }
     }
-  }, [charSlug, characterIndex, shouldShowProjects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [charSlug, characterIndex]);
 
-  const currentScreen: Screen = showProjects
-    ? "projects"
-    : selectedEthan
-      ? "title"
-      : "selection";
+  // Auto-scroll to gallery if URL has projects=1
+  useEffect(() => {
+    if (showProjectsParam === "1" && selectedEthan && galleryRef.current) {
+      const timer = setTimeout(() => {
+        galleryRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 900);
+      return () => clearTimeout(timer);
+    }
+  }, [showProjectsParam, selectedEthan]);
+
+  const currentScreen: Screen = selectedEthan ? "title" : "selection";
 
   useEffect(() => {
     const themeColor = selectedEthan ? selectedEthan.color : "#ffffff";
@@ -54,50 +72,61 @@ function HomeContent() {
     }
   }, [selectedEthan]);
 
+  const handleBack = useCallback(() => {
+    if (isExiting) return;
+    if (isSoundOn) {
+      const audio = new Audio("/sound-effects/drawer-closing.mov");
+      audio.play().catch(() => {});
+    }
+    setIsExiting(true);
+    setTimeout(() => {
+      const index = selectedEthan
+        ? characters.findIndex((c) => c.id === selectedEthan.id)
+        : -1;
+      setLastViewedCharacterIndex(index >= 0 ? index : null);
+      setSelectedEthan(null);
+      setIsExiting(false);
+      router.replace(
+        index >= 0 ? `/?character=${characters[index].slug}` : "/"
+      );
+    }, 800);
+  }, [isExiting, isSoundOn, selectedEthan, router]);
+
+  const handleScrollToGallery = useCallback(() => {
+    galleryRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   return (
     <div className="relative overflow-hidden min-h-screen">
       <Music screen={currentScreen} selectedCharacter={selectedEthan} />
-      {!showProjects && (
-        <StageSelectionScreen
-          ethans={characters}
-          initialCharacterIndex={lastViewedCharacterIndex}
-          onSelect={(ethan: Ethan) => {
-            setSelectedEthan(ethan);
-            setLastViewedCharacterIndex(
-              characters.findIndex((c) => c.id === ethan.id)
-            );
+      <StageSelectionScreen
+        ethans={characters}
+        initialCharacterIndex={lastViewedCharacterIndex}
+        onSelect={(ethan: Ethan) => {
+          setSelectedEthan(ethan);
+          setLastViewedCharacterIndex(
+            characters.findIndex((c) => c.id === ethan.id)
+          );
+        }}
+      />
+      {selectedEthan && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto overscroll-none"
+          style={{
+            backgroundColor: selectedEthan.color,
+            transform: isExiting ? "translateY(100vh)" : "translateY(0)",
+            transition: "transform 800ms ease-out",
+            animation: "slideUpFromBottom 800ms ease-out",
           }}
-        />
-      )}
-      {selectedEthan && !showProjects && (
-        <div className="absolute inset-0 z-50">
+        >
           <TitleScreen
             ethan={selectedEthan}
-            onBack={() => {
-              setLastViewedCharacterIndex(
-                characters.findIndex((c) => c.id === selectedEthan.id)
-              );
-              setSelectedEthan(null);
-            }}
-            onEnter={() => setShowProjects(true)}
+            onBack={handleBack}
+            onEnter={handleScrollToGallery}
           />
-        </div>
-      )}
-      {selectedEthan && showProjects && (
-        <div className="absolute inset-0 z-50">
-          <ProjectsScreen
-            ethan={selectedEthan}
-            initialProjectSlug={searchParams.get("project") ?? undefined}
-            onBack={() => {
-              const index = characters.findIndex((c) => c.id === selectedEthan.id);
-              setLastViewedCharacterIndex(index);
-              setShowProjects(false);
-              setSelectedEthan(null);
-              router.replace(
-                index >= 0 ? `/?character=${characters[index].slug}` : "/"
-              );
-            }}
-          />
+          <div ref={galleryRef}>
+            <ProjectsScreen ethan={selectedEthan} />
+          </div>
         </div>
       )}
     </div>
