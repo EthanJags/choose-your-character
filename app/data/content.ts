@@ -183,7 +183,7 @@ export const characters: CharacterEntry[] = [
         content: "",
         slug: "sketchy-business",
         description: "A multiplayer drawing and guessing game where players sketch prompts and race to guess what others are drawing.",
-        demoUrl: "https://quip-quest.vercel.app",
+        demoUrl: "https://sketchybusiness.vercel.app/",
         demoLabel: "Play Now",
         externalLinkOnly: true,
       },
