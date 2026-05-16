@@ -195,7 +195,7 @@ export default function Chatbot() {
         overflow: "hidden",
         transformOrigin: "bottom right",
         transition:
-          "width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1), border-radius 320ms ease, background 240ms ease, box-shadow 240ms ease, transform 200ms ease",
+          "width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1), right 320ms ease, bottom 320ms ease, border-radius 320ms ease, background 240ms ease, box-shadow 240ms ease, transform 200ms ease",
       }}
     >
       <style>{`
@@ -238,16 +238,10 @@ export default function Chatbot() {
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
-          fill="none"
-          stroke={theme.accentText}
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ width: "44px", height: "44px" }}
+          fill={theme.accentText}
+          style={{ width: "30px", height: "30px" }}
         >
-          <circle cx="9" cy="10" r="1.5" fill={theme.accentText} stroke="none" />
-          <circle cx="15" cy="10" r="1.5" fill={theme.accentText} stroke="none" />
-          <path d="M7.5 14c1.2 1.8 2.8 2.7 4.5 2.7s3.3-.9 4.5-2.7" />
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm6 5H7v-2h6v2zm4-6H7V6h10v2z" />
         </svg>
       </button>
 
