@@ -1,0 +1,41 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Projects" [ref=e5]
+      - button "About" [ref=e6]
+    - img "Mountain" [ref=e7]
+    - img "Left Cloud" [ref=e9]
+    - img "Right Cloud" [ref=e10]
+    - heading "Select your Ethan" [level=1] [ref=e11]
+    - generic [ref=e13] [cursor=pointer]:
+      - img "adventurer" [ref=e14]
+      - img "adventurer" [ref=e15]
+      - heading "The adventurer" [level=1] [ref=e16]
+    - button "Navigate left" [ref=e17] [cursor=pointer]:
+      - img [ref=e18]
+    - button "Navigate right" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+    - generic [ref=e24]:
+      - button "Go to character 1" [ref=e25] [cursor=pointer]
+      - button "Go to character 2" [ref=e26] [cursor=pointer]
+      - button "Go to character 3" [ref=e27] [cursor=pointer]
+      - button "Go to character 4" [ref=e28] [cursor=pointer]
+  - button "Turn sound on" [ref=e29]:
+    - img [ref=e30]
+  - generic [ref=e32]:
+    - button "Open chat" [ref=e33] [cursor=pointer]:
+      - img [ref=e34]
+    - generic:
+      - generic:
+        - generic: Chat with Ethan
+        - button "Close chat":
+          - img
+      - generic:
+        - generic: Hi! What's your name?
+      - generic:
+        - textbox "Type a message…"
+        - button "Send message":
+          - img
+  - button "Open Next.js Dev Tools" [ref=e44] [cursor=pointer]:
+    - img [ref=e45]
+  - alert [ref=e48]

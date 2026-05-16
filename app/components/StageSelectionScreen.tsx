@@ -15,6 +15,7 @@ type StageSelectionScreenProps = {
   ethans: Ethan[];
   initialCharacterIndex?: number | null;
   onSelect: (ethan: Ethan) => void;
+  active?: boolean;
 };
 
 type AnimationState = {
@@ -28,6 +29,7 @@ export default function StageSelectionScreen({
   ethans,
   initialCharacterIndex,
   onSelect,
+  active = true,
 }: StageSelectionScreenProps) {
   const [animState, setAnimState] = useState<AnimationState>({
     outgoingIndex: null,
@@ -59,6 +61,18 @@ export default function StageSelectionScreen({
   const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
 
   const currentEthan = ethans[animState.incomingIndex];
+
+  useEffect(() => {
+    if (!active) return;
+    const detail = {
+      color: currentEthan.color,
+      secondaryColor: currentEthan.secondaryColor,
+      thirdColor: currentEthan.thirdColor,
+      name: currentEthan.name,
+    };
+    (window as unknown as { __activeCharacter?: typeof detail }).__activeCharacter = detail;
+    window.dispatchEvent(new CustomEvent("characterChange", { detail }));
+  }, [currentEthan, active]);
 
   // Disable vertical scrolling
   useEffect(() => {
@@ -165,6 +179,7 @@ export default function StageSelectionScreen({
     if (!el) return;
 
     const handleWheel = (e: WheelEvent) => {
+      if (!active) return;
       if (activeTab === "about") return;
       if (animState.phase === "animating") return;
       const threshold = 50;
@@ -177,7 +192,7 @@ export default function StageSelectionScreen({
 
     el.addEventListener("wheel", handleWheel, { passive: true });
     return () => el.removeEventListener("wheel", handleWheel);
-  }, [activeTab, animState.incomingIndex, animState.phase, navigateTo]);
+  }, [active, activeTab, animState.incomingIndex, animState.phase, navigateTo]);
 
   // Touch swipe to navigate
   useEffect(() => {
@@ -185,11 +200,13 @@ export default function StageSelectionScreen({
     if (!el) return;
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (!active) return;
       if (activeTab === "about") return;
       touchStartX.current = e.touches[0].clientX;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (!active) return;
       if (activeTab === "about") return;
       if (animState.phase === "animating") return;
       const deltaX = touchStartX.current - e.changedTouches[0].clientX;
@@ -207,10 +224,11 @@ export default function StageSelectionScreen({
       el.removeEventListener("touchstart", handleTouchStart);
       el.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [activeTab, animState.incomingIndex, animState.phase, navigateTo]);
+  }, [active, activeTab, animState.incomingIndex, animState.phase, navigateTo]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!active) return;
       if (activeTab === "about") return;
 
       if (e.key === "ArrowLeft") {
@@ -236,7 +254,7 @@ export default function StageSelectionScreen({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeTab, animState.incomingIndex, animState.phase, ethans, isSoundOn, onSelect, navigateTo]);
+  }, [active, activeTab, animState.incomingIndex, animState.phase, ethans, isSoundOn, onSelect, navigateTo]);
 
   const handleTabClick = (tab: "select" | "about") => {
     if (tab === activeTab) return;

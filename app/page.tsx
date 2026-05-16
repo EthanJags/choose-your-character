@@ -70,6 +70,16 @@ function HomeContent() {
     if (meta) {
       meta.setAttribute("content", themeColor);
     }
+    if (selectedEthan) {
+      const detail = {
+        color: selectedEthan.color,
+        secondaryColor: selectedEthan.secondaryColor,
+        thirdColor: selectedEthan.thirdColor,
+        name: selectedEthan.name,
+      };
+      (window as unknown as { __activeCharacter?: typeof detail }).__activeCharacter = detail;
+      window.dispatchEvent(new CustomEvent("characterChange", { detail }));
+    }
   }, [selectedEthan]);
 
   const handleBack = useCallback(() => {
@@ -101,6 +111,7 @@ function HomeContent() {
       <Music screen={currentScreen} selectedCharacter={selectedEthan} />
       <StageSelectionScreen
         ethans={characters}
+        active={!selectedEthan}
         initialCharacterIndex={lastViewedCharacterIndex}
         onSelect={(ethan: Ethan) => {
           setSelectedEthan(ethan);

@@ -4,6 +4,7 @@ import "./globals.css";
 import EthanPreloader from "./components/EthanPreloader";
 import SoundToggle from "./components/SoundToggle";
 import ClickForSoundTooltip from "./components/ClickForSoundTooltip";
+import Chatbot from "./components/Chatbot";
 import { PostHogProvider } from "./providers";
 
 const geistSans = Geist({
@@ -84,6 +85,7 @@ export default function RootLayout({
           {children}
           <SoundToggle />
           <ClickForSoundTooltip />
+          <Chatbot />
         </PostHogProvider>
       </body>
     </html>

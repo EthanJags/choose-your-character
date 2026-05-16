@@ -1,0 +1,124 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - button "Projects" [ref=e5]
+        - button "About" [ref=e6]
+      - img "Mountain" [ref=e7]
+      - img "Left Cloud" [ref=e9]
+      - img "Right Cloud" [ref=e10]
+      - heading "Select your Ethan" [level=1] [ref=e11]
+      - generic [ref=e13] [cursor=pointer]:
+        - img "engineer" [ref=e14]
+        - img "engineer" [ref=e15]
+        - heading "The engineer" [level=1] [ref=e16]
+      - button "Navigate left" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+      - button "Navigate right" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+      - generic [ref=e24]:
+        - button "Go to character 1" [ref=e25] [cursor=pointer]
+        - button "Go to character 2" [ref=e26] [cursor=pointer]
+        - button "Go to character 3" [ref=e27] [cursor=pointer]
+        - button "Go to character 4" [ref=e28] [cursor=pointer]
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - button "Navigate up" [ref=e31] [cursor=pointer]:
+          - img [ref=e32]
+        - img "Clouds" [ref=e34]
+        - generic [ref=e35]:
+          - heading "The engineer" [level=1] [ref=e36]:
+            - text: The
+            - text: engineer
+          - paragraph [ref=e37] [cursor=pointer]: "[Click to enter]"
+        - img "engineer" [ref=e38]
+        - img [ref=e40] [cursor=pointer]
+      - generic [ref=e43]:
+        - generic:
+          - img
+        - generic [ref=e45]:
+          - link "Access AI Access AI Best use of TinyFish and Yutori in Creative Corner hackathon" [ref=e47] [cursor=pointer]:
+            - /url: https://tryaccessai.com
+            - generic [ref=e48]:
+              - img "Access AI" [ref=e50]
+              - paragraph [ref=e51]: Access AI
+              - paragraph [ref=e52]: Best use of TinyFish and Yutori in Creative Corner hackathon
+          - link "Science of Everything Science of Everything Full production site for a paid contract" [ref=e54] [cursor=pointer]:
+            - /url: https://thescienceofeverything.vercel.app/
+            - generic [ref=e55]:
+              - img "Science of Everything" [ref=e57]
+              - paragraph [ref=e58]: Science of Everything
+              - paragraph [ref=e59]: Full production site for a paid contract
+          - link "Interview AI Interview AI 35+ Users, spread through word of mouth" [ref=e61] [cursor=pointer]:
+            - /url: https://dontbombtheinterview.vercel.app
+            - generic [ref=e62]:
+              - img "Interview AI" [ref=e64]
+              - paragraph [ref=e65]: Interview AI
+              - paragraph [ref=e66]: 35+ Users, spread through word of mouth
+          - link "Sound Search Sound Search 50+ Users, spread through Berkeley clubs, music production tool" [ref=e68] [cursor=pointer]:
+            - /url: https://sound-search.vercel.app
+            - generic [ref=e69]:
+              - img "Sound Search" [ref=e71]
+              - paragraph [ref=e72]: Sound Search
+              - paragraph [ref=e73]: 50+ Users, spread through Berkeley clubs, music production tool
+          - link "Beat the Market Beat the Market Prediction Market betting game" [ref=e75] [cursor=pointer]:
+            - /url: https://beatthemarket.xyz/
+            - generic [ref=e76]:
+              - img "Beat the Market" [ref=e78]
+              - paragraph [ref=e79]: Beat the Market
+              - paragraph [ref=e80]: Prediction Market betting game
+          - link "Sketchy Business Sketchy Business A fast-paced drawing and guessing game" [ref=e82] [cursor=pointer]:
+            - /url: https://sketchybusiness.vercel.app/
+            - generic [ref=e83]:
+              - img "Sketchy Business" [ref=e85]
+              - paragraph [ref=e86]: Sketchy Business
+              - paragraph [ref=e87]: A fast-paced drawing and guessing game
+          - 'link "Scribble AI Scribble AI 20,000+ Downloads, #4 Product of the Day on Product Hunt, $15,000 in grants awarded" [ref=e89] [cursor=pointer]':
+            - /url: /project/engineer/scribble-ai
+            - generic [ref=e90]:
+              - img "Scribble AI" [ref=e92]
+              - paragraph [ref=e93]: Scribble AI
+              - paragraph [ref=e94]: "20,000+ Downloads, #4 Product of the Day on Product Hunt, $15,000 in grants awarded"
+          - link "Show and Tell Show and Tell Treehacks Grand Prize Winner - Most Creative Hack and Best Team" [ref=e96] [cursor=pointer]:
+            - /url: https://devpost.com/software/show-and-tell-capturing-emotion-in-sign-language
+            - generic [ref=e97]:
+              - img "Show and Tell" [ref=e99]
+              - paragraph [ref=e100]: Show and Tell
+              - paragraph [ref=e101]: Treehacks Grand Prize Winner - Most Creative Hack and Best Team
+          - link "Enable Enable Audience Choice and Best Use of OpenAI at Scale AI Hackathon" [ref=e103] [cursor=pointer]:
+            - /url: https://devpost.com/software/enable-automated-generation-of-prosthetic-devices
+            - generic [ref=e104]:
+              - img "Enable" [ref=e106]
+              - paragraph [ref=e107]: Enable
+              - paragraph [ref=e108]: Audience Choice and Best Use of OpenAI at Scale AI Hackathon
+          - link "Tic Tac Tobot Tic Tac Tobot Made a robot that physically plays tic tac toe with you using motors and magnets" [ref=e110] [cursor=pointer]:
+            - /url: https://www.youtube.com/watch?v=vvE1xocyev0
+            - generic [ref=e111]:
+              - img "Tic Tac Tobot" [ref=e113]
+              - paragraph [ref=e114]: Tic Tac Tobot
+              - paragraph [ref=e115]: Made a robot that physically plays tic tac toe with you using motors and magnets
+          - link "Spotter Spotter Machine learning powered tool for first responders" [ref=e117] [cursor=pointer]:
+            - /url: https://devpost.com/software/spotter-revolutionizing-disaster-relief
+            - generic [ref=e118]:
+              - img "Spotter" [ref=e120]
+              - paragraph [ref=e121]: Spotter
+              - paragraph [ref=e122]: Machine learning powered tool for first responders
+  - button "Turn sound off" [ref=e123]:
+    - img [ref=e124]
+  - generic [ref=e126]:
+    - button "Open chat" [ref=e127] [cursor=pointer]:
+      - img [ref=e128]
+    - generic:
+      - generic:
+        - generic: Chat with Ethan
+        - button "Close chat":
+          - img
+      - generic:
+        - generic: Hi! What's your name?
+      - generic:
+        - textbox "Type a message…"
+        - button "Send message":
+          - img
+  - button "Open Next.js Dev Tools" [ref=e138] [cursor=pointer]:
+    - img [ref=e139]
+  - alert [ref=e142]
