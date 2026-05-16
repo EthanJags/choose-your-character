@@ -325,7 +325,7 @@ Scribble AI provides a mobile interface to generate customized text in 20+ pre-b
       },
       {
         image: "/projects/misc/thoughts-on-life/thumbnail.png",
-        title: "Listen to my thoughts on life",
+        title: "My thoughts on life",
         subtitle: "My podcast episode on The Magnus Effect",
         content: "",
         slug: "thoughts-on-life",
