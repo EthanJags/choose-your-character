@@ -72,7 +72,7 @@ function renderWithLinks(
 }
 
 const INITIAL_MESSAGES: Message[] = [
-  { from: "bot", text: "Hi! What's your name?" },
+  { from: "bot", text: "Hi! I'm Camden, a chatbot trained on all of Ethan's digital image. What is your name?" },
 ];
 
 type Theme = {

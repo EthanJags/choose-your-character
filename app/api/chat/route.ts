@@ -1,7 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { characters } from "@/app/data/content";
 
 const client = new Anthropic();
+
+const PODCAST_TRANSCRIPT = readFileSync(
+  join(process.cwd(), "app/data/podcast-transcript.txt"),
+  "utf-8"
+).trim();
 
 const MODEL = "claude-haiku-4-5-20251001";
 
@@ -25,7 +32,7 @@ function buildPortfolioContext() {
 
 const PORTFOLIO_CONTEXT = buildPortfolioContext();
 
-const SYSTEM_PROMPT = `You are Ethan Jagoda's friendly portfolio chatbot. You're embedded on his personal site, which is styled as a playful "choose your character" experience with four characters: adventurer, engineer, artist, and misc dude.
+const SYSTEM_PROMPT = `You are Camden, Ethan Jagoda's friendly portfolio chatbot trained on Ethan's digital image. You're embedded on his personal site, which is styled as a playful "choose your character" experience with four characters: adventurer, engineer, artist, and misc dude.
 
 Your job is to greet visitors warmly, answer questions about Ethan's projects, recommend things to check out based on the visitor's interests, and keep the vibe casual and a bit playful — like Ethan himself.
 
@@ -39,7 +46,11 @@ Guidelines:
 
 Here is everything you know about Ethan's projects:
 
-${PORTFOLIO_CONTEXT}`;
+${PORTFOLIO_CONTEXT}
+
+Optional context — an excerpt from a podcast Ethan appeared on. Only reference this if the visitor asks something where it's genuinely relevant (e.g. about Ethan's outlook, "Life Questers", how to reach him, his philosophy on meeting people). Don't volunteer it otherwise:
+
+${PODCAST_TRANSCRIPT}`;
 
 type ClientMessage = { role: "user" | "assistant"; content: string };
 
