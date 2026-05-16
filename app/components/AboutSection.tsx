@@ -29,9 +29,9 @@ function SocialIcon({
 
 export default function AboutSection() {
   return (
-    <div className="absolute inset-0 z-15 flex flex-col items-center pt-28 px-4 pb-6 sm:pt-40 sm:pb-24 overflow-y-auto sm:overflow-hidden">
+    <div className="absolute inset-0 z-15 flex flex-col items-center pt-28 px-4 pb-6 sm:pt-40 sm:pb-24 overflow-y-auto [@media(min-height:900px)]:sm:overflow-hidden">
       <div className="flex justify-center p-4 sm:p-2 shrink-0">
-        <div className="relative w-[90vw] max-w-[680px] sm:h-[calc(100vh-10rem-6rem)] min-h-[300px] shrink-0">
+        <div className="relative w-[90vw] max-w-[680px] [@media(min-height:900px)]:sm:h-[calc(100vh-10rem-6rem)] min-h-[300px] shrink-0">
         <Image
           src="/about/notebook.png"
           alt=""
@@ -50,7 +50,7 @@ export default function AboutSection() {
           aria-hidden
         />
         <div
-          className="relative sm:absolute sm:inset-0 pt-4 pb-6 px-8 sm:pt-8 sm:px-14 flex flex-col overflow-y-auto sm:overflow-hidden"
+          className="relative [@media(min-height:900px)]:sm:absolute [@media(min-height:900px)]:sm:inset-0 pt-4 pb-6 px-8 sm:pt-8 sm:px-14 flex flex-col overflow-y-auto [@media(min-height:900px)]:sm:overflow-hidden"
           style={{ fontFamily: "var(--font-caveat), cursive" }}
         >
           <h1
