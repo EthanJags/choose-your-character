@@ -56,7 +56,7 @@ function PolaroidCard({
             />
           </div>
           <p
-            className="mt-3 text-left text-gray-800 truncate uppercase"
+            className="mt-3 text-left text-gray-800 uppercase leading-tight [overflow-wrap:anywhere]"
             style={{
               fontFamily: "var(--font-londrina-solid), sans-serif",
               fontWeight: 900,

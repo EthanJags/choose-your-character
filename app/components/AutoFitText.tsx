@@ -51,7 +51,7 @@ export default function AutoFitText({
   }, [children, baseFontSize, minFontSizePx]);
 
   return (
-    <div ref={containerRef} className="w-full min-w-0 overflow-hidden">
+    <div ref={containerRef} className="w-full min-w-0 overflow-x-clip">
       <Tag
         ref={textRef as React.Ref<HTMLHeadingElement>}
         className={className}

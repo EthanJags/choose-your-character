@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Landscape phones: too short for the stacked mobile layout */
+@custom-variant landscape-phone (@media (orientation: landscape) and (max-height: 500px));
+
 @font-face {
   font-family: "Figma Hand";
   src:

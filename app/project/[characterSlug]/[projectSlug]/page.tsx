@@ -115,19 +115,19 @@ export default async function ProjectPage({
           >
             {project.title}
           </AutoFitText>
-          <AutoFitText
-            as="p"
+          {/* Subtitles can be long, so they wrap instead of shrinking to fit one line */}
+          <p
             className="uppercase mt-2 text-center md:text-left"
-            baseFontSize="clamp(1rem, 2.5vw, 1.5rem)"
             style={{
               color: character.secondaryColor,
               fontFamily: "var(--font-londrina-solid), sans-serif",
               fontWeight: 900,
               opacity: 0.9,
+              fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
             }}
           >
             {project.subtitle}
-          </AutoFitText>
+          </p>
         </div>
 
         <div
@@ -152,7 +152,7 @@ export default async function ProjectPage({
 
         {project.description && (
           <div
-            className={`max-w-2xl text-lg md:text-xl leading-relaxed ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
+            className={`max-w-2xl text-lg md:text-xl leading-relaxed [overflow-wrap:anywhere] ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
             style={{
               color: character.secondaryColor,
               opacity: 0.95,

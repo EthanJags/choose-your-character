@@ -361,7 +361,9 @@ export default function StageSelectionScreen({
       {activeTab === "select" && (
         <>
           {/* Select your Ethan */}
-          <h1 className="text-6xl md:text-8xl text-white text-center uppercase absolute z-20 top-[20vh] -translate-y-1/2 left-0 right-0 mx-5 lg:mx-20">
+          {/* Font also scales with height and the top never goes above the tab bar,
+              so the heading doesn't cover the tabs on short/landscape screens */}
+          <h1 className="text-[min(3.75rem,15vw,12vh)] md:text-[min(6rem,12vw,12vh)] leading-none text-white text-center uppercase absolute z-20 top-[max(5rem,calc(20vh-0.5lh))] left-0 right-0 mx-5 lg:mx-20 pointer-events-none">
             {uiStrings.selectCharacter}
           </h1>
 
