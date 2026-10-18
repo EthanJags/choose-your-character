@@ -71,6 +71,9 @@ function renderWithLinks(
   return parts.length ? parts : renderBold(text, "only");
 }
 
+// Matches the per-message cap enforced by /api/chat
+const MAX_INPUT_LENGTH = 1000;
+
 const INITIAL_MESSAGES: Message[] = [
   { from: "bot", text: "Hi! I'm Camden, a chatbot trained on all of Ethan's digital image. What is your name?" },
 ];
@@ -139,6 +142,13 @@ export default function Chatbot() {
     }
   }, [open]);
 
+  // The input is disabled while waiting, which drops focus — restore it after the reply
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    if (wasLoadingRef.current && !loading && open) inputRef.current?.focus();
+    wasLoadingRef.current = loading;
+  }, [loading, open]);
+
   const toggle = useCallback(() => setOpen((v) => !v), []);
 
   const handleSubmit = useCallback(
@@ -161,6 +171,7 @@ export default function Chatbot() {
             })),
           }),
         });
+        if (!res.ok) throw new Error(`chat request failed: ${res.status}`);
         const data = (await res.json()) as { text?: string; error?: string };
         const reply = data.text?.trim() || "Hmm, I'm not sure what to say to that. Try asking about Ethan's projects!";
         setMessages((prev) => [...prev, { from: "bot", text: reply }]);
@@ -188,6 +199,7 @@ export default function Chatbot() {
         width: open ? `${EXPANDED.width}px` : `${COLLAPSED.width}px`,
         height: open ? `${EXPANDED.height}px` : `${COLLAPSED.height}px`,
         maxWidth: "calc(100vw - 32px)",
+        maxHeight: "calc(100dvh - 32px)",
         background: open ? "#ffffff" : theme.accent,
         border: "3px solid #171717",
         borderRadius: open ? `${EXPANDED.radius}px` : `${COLLAPSED.radius}px`,
@@ -380,9 +392,14 @@ export default function Chatbot() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              // Keep typing from triggering the site's global keyboard shortcuts
+              e.stopPropagation();
+              if (e.key === "Escape") setOpen(false);
+            }}
             onKeyUp={(e) => e.stopPropagation()}
             disabled={loading}
+            maxLength={MAX_INPUT_LENGTH}
             placeholder={loading ? "Thinking…" : "Type a message…"}
             style={{
               flex: 1,

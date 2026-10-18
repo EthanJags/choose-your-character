@@ -8,6 +8,8 @@ import Arrow from "./Arrow";
 import AboutSection from "./AboutSection";
 import type { Ethan } from "@/app/page";
 import { uiStrings } from "@/app/data/content";
+import { playSfx } from "@/app/lib/sound";
+import { isInteractiveTarget } from "@/app/lib/keyboard";
 
 
 
@@ -55,7 +57,8 @@ export default function StageSelectionScreen({
     }
   }, [initialCharacterIndex, ethans.length]);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isSoundOn, setIsSoundOn] = useState(true);
+  // SoundToggle broadcasts the current value on mount
+  const [isSoundOn, setIsSoundOn] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"select" | "about">("select");
   const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
@@ -95,14 +98,6 @@ export default function StageSelectionScreen({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  // Read saved sound preference on mount
-  useEffect(() => {
-    const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference !== null) {
-      setIsSoundOn(savedPreference === "true");
-    }
-  }, []);
-
   // Listen to sound toggle events
   useEffect(() => {
     const handleSoundToggle = (e: CustomEvent<{ enabled: boolean }>) => {
@@ -116,47 +111,47 @@ export default function StageSelectionScreen({
     };
   }, []);
 
+  // Guards against a second navigation landing before the re-render that marks
+  // the first one as animating (e.g. fast double-clicks)
+  const isAnimatingRef = useRef(false);
+
   const navigateTo = useCallback((newIndex: number) => {
+    if (isAnimatingRef.current) return;
+
+    let wrappedIndex = newIndex;
+    if (newIndex < 0) {
+      wrappedIndex = ethans.length - 1;
+    } else if (newIndex >= ethans.length) {
+      wrappedIndex = 0;
+    }
+
+    const currentIndex = animState.incomingIndex;
+    if (wrappedIndex === currentIndex) return;
+
+    let dir: "left" | "right";
+    if (newIndex < 0) {
+      dir = "left";
+    } else if (newIndex >= ethans.length) {
+      dir = "right";
+    } else {
+      dir = wrappedIndex > currentIndex ? "right" : "left";
+    }
+
+    isAnimatingRef.current = true;
     setHoveredIndex(null);
-    setAnimState((prev) => {
-      if (prev.phase === "animating" || newIndex === prev.incomingIndex) return prev;
-
-      let wrappedIndex = newIndex;
-      if (newIndex < 0) {
-        wrappedIndex = ethans.length - 1;
-      } else if (newIndex >= ethans.length) {
-        wrappedIndex = 0;
-      }
-
-      if (wrappedIndex === prev.incomingIndex) return prev;
-
-      if (isSoundOn) {
-        const audio = new Audio("/sound-effects/menuselect.mov");
-        audio.currentTime = 0.15;
-        audio.play();
-      }
-
-      let dir: "left" | "right";
-      if (newIndex < 0) {
-        dir = "left";
-      } else if (newIndex >= ethans.length) {
-        dir = "right";
-      } else {
-        dir = wrappedIndex > prev.incomingIndex ? "right" : "left";
-      }
-
-      return {
-        outgoingIndex: prev.incomingIndex,
-        incomingIndex: wrappedIndex,
-        direction: dir,
-        phase: "animating",
-      };
+    if (isSoundOn) playSfx("/sound-effects/menuselect.mov", 0.15);
+    setAnimState({
+      outgoingIndex: currentIndex,
+      incomingIndex: wrappedIndex,
+      direction: dir,
+      phase: "animating",
     });
-  }, [ethans.length, isSoundOn]);
+  }, [animState.incomingIndex, ethans.length, isSoundOn]);
 
   useEffect(() => {
     if (animState.phase === "animating") {
       const timer = setTimeout(() => {
+        isAnimatingRef.current = false;
         setAnimState((prev) => ({ ...prev, outgoingIndex: null, phase: "idle" }));
       }, 800);
       return () => clearTimeout(timer);
@@ -172,20 +167,38 @@ export default function StageSelectionScreen({
   const handleDotClick = useCallback((index: number) => navigateTo(index), [navigateTo]);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
+  // After a wheel navigation, ignore wheel events until the gesture (including
+  // trackpad momentum) has been quiet for a moment, so one swipe = one step
+  const wheelLockedRef = useRef(false);
+  const wheelUnlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Horizontal wheel scroll to navigate
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
+    const lockWheelUntilQuiet = () => {
+      wheelLockedRef.current = true;
+      if (wheelUnlockTimerRef.current) clearTimeout(wheelUnlockTimerRef.current);
+      wheelUnlockTimerRef.current = setTimeout(() => {
+        wheelLockedRef.current = false;
+      }, 200);
+    };
+
     const handleWheel = (e: WheelEvent) => {
       if (!active) return;
       if (activeTab === "about") return;
+      if (wheelLockedRef.current) {
+        lockWheelUntilQuiet();
+        return;
+      }
       if (animState.phase === "animating") return;
       const threshold = 50;
       if (e.deltaX > threshold) {
+        lockWheelUntilQuiet();
         navigateTo(animState.incomingIndex + 1);
       } else if (e.deltaX < -threshold) {
+        lockWheelUntilQuiet();
         navigateTo(animState.incomingIndex - 1);
       }
     };
@@ -237,12 +250,13 @@ export default function StageSelectionScreen({
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
         navigateTo(animState.incomingIndex + 1);
-      } else if (e.key === "Enter" && animState.phase === "idle") {
+      } else if (
+        e.key === "Enter" &&
+        animState.phase === "idle" &&
+        !isInteractiveTarget(e.target)
+      ) {
         e.preventDefault();
-        if (isSoundOn) {
-          const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
-          selectAudio.play().catch(() => {});
-        }
+        if (isSoundOn) playSfx("/sound-effects/selectCharacter.mp3");
         posthog.capture("character_selected", {
           character_name: ethans[animState.incomingIndex].name,
           character_slug: ethans[animState.incomingIndex].slug,
@@ -258,11 +272,7 @@ export default function StageSelectionScreen({
 
   const handleTabClick = (tab: "select" | "about") => {
     if (tab === activeTab) return;
-    if (isSoundOn) {
-      const audio = new Audio("/sound-effects/menuselect.mov");
-      audio.currentTime = 0.15;
-      audio.play();
-    }
+    if (isSoundOn) playSfx("/sound-effects/menuselect.mov", 0.15);
     if (tab === "about") {
       posthog.capture("about_tab_viewed", {
         previous_tab: activeTab,
@@ -396,12 +406,7 @@ export default function StageSelectionScreen({
               }}
               onClick={() => {
                 if (isIncoming) {
-                  if (isSoundOn) {
-                    const selectAudio = new Audio("/sound-effects/selectCharacter.mp3");
-                    selectAudio.play().catch(() => {
-                      // Ignore autoplay errors
-                    });
-                  }
+                  if (isSoundOn) playSfx("/sound-effects/selectCharacter.mp3");
                   posthog.capture("character_selected", {
                     character_name: ethan.name,
                     character_slug: ethan.slug,
@@ -459,6 +464,7 @@ export default function StageSelectionScreen({
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20">
         <Buttons
           activeIndex={animState.incomingIndex}
+          totalDots={ethans.length}
           activeColor={currentEthan.color}
           onDotClick={handleDotClick}
         />

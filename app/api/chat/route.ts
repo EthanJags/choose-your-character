@@ -55,17 +55,53 @@ ${PODCAST_TRANSCRIPT}`;
 
 type ClientMessage = { role: "user" | "assistant"; content: string };
 
+// Limits keep a single request (and anyone scripting the endpoint) from running up cost
+const MAX_MESSAGES = 30;
+const MAX_MESSAGE_CHARS = 1000;
+
+function jsonResponse(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function isClientMessage(m: unknown): m is ClientMessage {
+  if (typeof m !== "object" || m === null) return false;
+  const { role, content } = m as Record<string, unknown>;
+  return (
+    (role === "user" || role === "assistant") &&
+    typeof content === "string" &&
+    content.trim().length > 0
+  );
+}
+
 export async function POST(req: Request) {
+  let body: unknown;
   try {
-    const { messages } = (await req.json()) as { messages: ClientMessage[] };
+    body = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON" }, 400);
+  }
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return new Response(JSON.stringify({ error: "messages required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  const messages = (body as { messages?: unknown } | null)?.messages;
+  if (!Array.isArray(messages) || messages.length === 0 || !messages.every(isClientMessage)) {
+    return jsonResponse({ error: "messages must be a non-empty array of user/assistant text messages" }, 400);
+  }
+  if (messages.some((m) => m.content.length > MAX_MESSAGE_CHARS)) {
+    return jsonResponse({ error: "message too long" }, 413);
+  }
 
+  // Keep the most recent turns. The API requires the conversation to start with a
+  // user turn, but the widget opens with the bot's greeting, so stand in a user
+  // turn for "opened the chat" when the history starts with the assistant.
+  const recent = messages.slice(-MAX_MESSAGES);
+  const apiMessages: Anthropic.MessageParam[] =
+    recent[0].role === "assistant"
+      ? [{ role: "user", content: "(The visitor opened the chat.)" }, ...recent]
+      : recent;
+
+  try {
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 400,
@@ -76,7 +112,7 @@ export async function POST(req: Request) {
           cache_control: { type: "ephemeral" },
         },
       ],
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      messages: apiMessages.map((m) => ({ role: m.role, content: m.content })),
     });
 
     const text = response.content
@@ -84,15 +120,9 @@ export async function POST(req: Request) {
       .map((b) => b.text)
       .join("");
 
-    return new Response(JSON.stringify({ text }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ text }, 200);
   } catch (err) {
     console.error("[/api/chat] error", err);
-    return new Response(
-      JSON.stringify({ error: "chat failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "chat failed" }, 500);
   }
 }

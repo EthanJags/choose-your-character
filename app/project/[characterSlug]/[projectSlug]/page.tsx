@@ -58,7 +58,7 @@ export default async function ProjectPage({
     >
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 md:px-8 md:py-6">
         <Link
-          href={`/?character=${characterSlug}&projects=1&project=${projectSlug}`}
+          href={`/?character=${characterSlug}&projects=1`}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           style={{ color: character.secondaryColor }}
         >

@@ -71,7 +71,7 @@ export const characters: CharacterEntry[] = [
         content: "",
         slug: "japan",
         aspectRatio: "1000/1200",
-        description: "Spent 2 weeks in Japan exploring Kyoto and Tokyo. Ate lots of ramen and japanese curry. Spent every night with locals. Was on Japanese Natinal Television.",
+        description: "Spent 2 weeks in Japan exploring Kyoto and Tokyo. Ate lots of ramen and japanese curry. Spent every night with locals. Was on Japanese National Television.",
         demoUrl: "https://www.instagram.com/p/DFolC-fSof1/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==",
         externalLinkOnly: true,
       },

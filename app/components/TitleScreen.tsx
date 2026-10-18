@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import posthog from "posthog-js";
 import type { Ethan } from "@/app/page";
 import { uiStrings } from "@/app/data/content";
 import Arrow from "./Arrow";
+import { isInteractiveTarget } from "@/app/lib/keyboard";
 
 type TitleScreenProps = {
     ethan: Ethan;
@@ -14,6 +15,8 @@ type TitleScreenProps = {
 };
 
 export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps) {
+    const rootRef = useRef<HTMLDivElement>(null);
+
     const handleEnter = useCallback(() => {
         posthog.capture("character_title_entered", {
             character_name: ethan.name,
@@ -24,10 +27,12 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowUp" || e.key === "Escape") {
+            // ArrowUp only exits when the title screen is in view; in the gallery it scrolls
+            const isAtTop = (rootRef.current?.getBoundingClientRect().top ?? 0) >= -1;
+            if (e.key === "Escape" || (e.key === "ArrowUp" && isAtTop)) {
                 e.preventDefault();
                 onBack();
-            } else if (e.key === "Enter") {
+            } else if (e.key === "Enter" && !isInteractiveTarget(e.target)) {
                 e.preventDefault();
                 handleEnter();
             }
@@ -39,6 +44,7 @@ export default function TitleScreen({ ethan, onBack, onEnter }: TitleScreenProps
 
     return (
         <div
+            ref={rootRef}
             className="relative min-h-screen w-full h-screen"
             style={{ backgroundColor: ethan.color }}
         >

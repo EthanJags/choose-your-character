@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { readSoundPref } from "@/app/lib/sound";
 
 export default function ClickForSoundTooltip() {
   const [visible, setVisible] = useState(false);
@@ -10,8 +11,7 @@ export default function ClickForSoundTooltip() {
 
   // Only show if sound hasn't been explicitly disabled
   useEffect(() => {
-    const savedPreference = localStorage.getItem("soundEnabled");
-    if (savedPreference === "false") return;
+    if (readSoundPref() === false) return;
     const timeout = setTimeout(() => setVisible(true), 400);
     return () => clearTimeout(timeout);
   }, []);

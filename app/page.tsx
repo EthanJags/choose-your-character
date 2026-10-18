@@ -9,6 +9,7 @@ import Music from "./components/Music";
 import type { Screen } from "./components/Music";
 import { characters } from "./data/content";
 import type { ProjectEntry, CharacterEntry } from "./data/content";
+import { playSfx } from "./lib/sound";
 
 export type Project = ProjectEntry;
 export type Ethan = CharacterEntry;
@@ -29,12 +30,12 @@ function HomeContent() {
     number | null
   >(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+  // Set when we change ?character= ourselves, so the URL sync below ignores it
+  const skipUrlSyncRef = useRef(false);
 
-  // Sound state for exit sound effect
-  const [isSoundOn, setIsSoundOn] = useState(true);
+  // Sound state for exit sound effect (SoundToggle broadcasts the current value on mount)
+  const [isSoundOn, setIsSoundOn] = useState(false);
   useEffect(() => {
-    const saved = localStorage.getItem("soundEnabled");
-    if (saved !== null) setIsSoundOn(saved === "true");
     const handler = (e: Event) => {
       setIsSoundOn((e as CustomEvent<{ enabled: boolean }>).detail.enabled);
     };
@@ -42,15 +43,27 @@ function HomeContent() {
     return () => window.removeEventListener("soundToggle", handler);
   }, []);
 
+  // Open the character named in the URL when it changes from outside
+  // (e.g. a chatbot link), even if another character is already open
   useEffect(() => {
-    if (charSlug && characterIndex >= 0) {
-      setLastViewedCharacterIndex(characterIndex);
-      if (!selectedEthan) {
-        setSelectedEthan(characters[characterIndex]);
-      }
+    if (skipUrlSyncRef.current) {
+      skipUrlSyncRef.current = false;
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (characterIndex >= 0) {
+      setLastViewedCharacterIndex(characterIndex);
+      setSelectedEthan(characters[characterIndex]);
+    }
   }, [charSlug, characterIndex]);
+
+  const replaceCharacterInUrl = useCallback(
+    (slug: string | null) => {
+      if (slug === charSlug) return;
+      skipUrlSyncRef.current = true;
+      router.replace(slug ? `/?character=${slug}` : "/", { scroll: false });
+    },
+    [charSlug, router]
+  );
 
   // Auto-scroll to gallery if URL has projects=1
   useEffect(() => {
@@ -84,10 +97,7 @@ function HomeContent() {
 
   const handleBack = useCallback(() => {
     if (isExiting) return;
-    if (isSoundOn) {
-      const audio = new Audio("/sound-effects/drawer-closing.mov");
-      audio.play().catch(() => {});
-    }
+    if (isSoundOn) playSfx("/sound-effects/drawer-closing.mov");
     setIsExiting(true);
     setTimeout(() => {
       const index = selectedEthan
@@ -96,8 +106,10 @@ function HomeContent() {
       setLastViewedCharacterIndex(index >= 0 ? index : null);
       setSelectedEthan(null);
       setIsExiting(false);
+      // Drop ?projects=1 but keep the character so the selection screen remembers it
       router.replace(
-        index >= 0 ? `/?character=${characters[index].slug}` : "/"
+        index >= 0 ? `/?character=${characters[index].slug}` : "/",
+        { scroll: false }
       );
     }, 800);
   }, [isExiting, isSoundOn, selectedEthan, router]);
@@ -118,6 +130,7 @@ function HomeContent() {
           setLastViewedCharacterIndex(
             characters.findIndex((c) => c.id === ethan.id)
           );
+          replaceCharacterInUrl(ethan.slug);
         }}
       />
       {selectedEthan && (

@@ -2,21 +2,26 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import posthog from "posthog-js";
+import { readSoundPref, writeSoundPref } from "@/app/lib/sound";
 
 export default function SoundToggle() {
   const [isSoundOn, setIsSoundOn] = useState(false);
   const hasAutoEnabled = useRef(false);
 
+  const setSound = useCallback((enabled: boolean) => {
+    writeSoundPref(enabled);
+    setIsSoundOn(enabled);
+  }, []);
+
   // Start muted; on first user interaction, auto-enable sound
   useEffect(() => {
-    const savedPreference = localStorage.getItem("soundEnabled");
     // If user explicitly disabled sound, respect that
-    if (savedPreference === "false") return;
+    if (readSoundPref() === false) return;
 
     const handleInteraction = () => {
       if (!hasAutoEnabled.current) {
         hasAutoEnabled.current = true;
-        setIsSoundOn(true);
+        setSound(true);
       }
       document.removeEventListener("click", handleInteraction);
       document.removeEventListener("keydown", handleInteraction);
@@ -32,25 +37,23 @@ export default function SoundToggle() {
       document.removeEventListener("keydown", handleInteraction);
       document.removeEventListener("touchstart", handleInteraction);
     };
-  }, []);
+  }, [setSound]);
 
   useEffect(() => {
-    // Update localStorage when sound state changes
-    localStorage.setItem("soundEnabled", String(isSoundOn));
-    
     // Dispatch custom event so other components can listen
     window.dispatchEvent(new CustomEvent("soundToggle", { detail: { enabled: isSoundOn } }));
   }, [isSoundOn]);
 
   const toggleSound = useCallback(() => {
-    setIsSoundOn((prev) => {
-      posthog.capture("sound_toggled", { enabled: !prev });
-      return !prev;
-    });
-  }, []);
+    // Toggling counts as the first interaction, so don't let auto-enable undo it
+    hasAutoEnabled.current = true;
+    posthog.capture("sound_toggled", { enabled: !isSoundOn });
+    setSound(!isSoundOn);
+  }, [isSoundOn, setSound]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "m" || e.key === "M") {
         e.preventDefault();
         toggleSound();

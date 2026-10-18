@@ -26,12 +26,41 @@ function getMusicForScreen(screen: Screen, character: Ethan | null): string {
   return "/music/characterSelectSong.mp3";
 }
 
+function stopFade(fadeIntervalRef: { current: NodeJS.Timeout | null }) {
+  if (fadeIntervalRef.current) {
+    clearInterval(fadeIntervalRef.current);
+    fadeIntervalRef.current = null;
+  }
+}
+
+function playWithFadeIn(
+  audio: HTMLAudioElement,
+  fadeIntervalRef: { current: NodeJS.Timeout | null }
+) {
+  stopFade(fadeIntervalRef);
+  audio.play().catch(() => {
+    // Autoplay blocked - SoundToggle only turns sound on after a user interaction
+  });
+
+  // Fade in from the current volume over 2 seconds
+  const fadeSteps = 50;
+  const fadeInterval = 2000 / fadeSteps;
+  const startVolume = audio.volume;
+  const volumeStep = (TARGET_VOLUME - startVolume) / fadeSteps;
+
+  let currentStep = 0;
+  fadeIntervalRef.current = setInterval(() => {
+    currentStep++;
+    audio.volume = Math.min(startVolume + volumeStep * currentStep, TARGET_VOLUME);
+    if (currentStep >= fadeSteps) stopFade(fadeIntervalRef);
+  }, fadeInterval);
+}
+
 export default function Music({ screen, selectedCharacter }: MusicProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isSoundOn, setIsSoundOn] = useState(false);
-  const currentTrackRef = useRef<string>("");
-  const hasUserInteracted = useRef(false);
+  const isSoundOnRef = useRef(false);
 
   // Listen to sound toggle events
   useEffect(() => {
@@ -45,33 +74,19 @@ export default function Music({ screen, selectedCharacter }: MusicProps) {
     };
   }, []);
 
-  // Update volume when sound toggle changes (but only if not currently fading)
+  // Start or stop the current track when sound is toggled
   useEffect(() => {
-    if (audioRef.current && !fadeIntervalRef.current) {
-      audioRef.current.volume = isSoundOn ? TARGET_VOLUME : 0;
+    isSoundOnRef.current = isSoundOn;
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isSoundOn) {
+      playWithFadeIn(audio, fadeIntervalRef);
+    } else {
+      stopFade(fadeIntervalRef);
+      audio.volume = 0;
+      audio.pause();
     }
-  }, [isSoundOn]);
-
-  // Handle user interaction for autoplay
-  useEffect(() => {
-    const handleInteraction = () => {
-      hasUserInteracted.current = true;
-      if (audioRef.current && audioRef.current.paused && isSoundOn) {
-        audioRef.current.play().catch(() => {
-          // Ignore errors
-        });
-      }
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("keydown", handleInteraction);
-    };
-
-    document.addEventListener("click", handleInteraction);
-    document.addEventListener("keydown", handleInteraction);
-
-    return () => {
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("keydown", handleInteraction);
-    };
   }, [isSoundOn]);
 
   // Handle music changes based on screen and character
@@ -79,21 +94,17 @@ export default function Music({ screen, selectedCharacter }: MusicProps) {
     const targetTrack = getMusicForScreen(screen, selectedCharacter);
 
     // If same track, no need to change
-    if (targetTrack === currentTrackRef.current && audioRef.current) {
+    if (audioRef.current && audioRef.current.src.endsWith(targetTrack)) {
       return;
     }
 
-    // Clear any existing fade interval
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-      fadeIntervalRef.current = null;
-    }
+    stopFade(fadeIntervalRef);
 
     const previousAudio = audioRef.current;
     const previousVolume = previousAudio?.volume ?? 0;
 
     // Fade out the previous track
-    if (previousAudio && previousVolume > 0) {
+    if (previousAudio && previousVolume > 0 && !previousAudio.paused) {
       const fadeSteps = 40;
       const fadeInterval = FADE_DURATION / fadeSteps;
       const volumeStep = previousVolume / fadeSteps;
@@ -115,58 +126,32 @@ export default function Music({ screen, selectedCharacter }: MusicProps) {
       previousAudio.currentTime = 0;
     }
 
-    // Create and play the new track
+    // Create the new track; it starts once it can play (if sound is on)
     const newAudio = new Audio(targetTrack);
     newAudio.loop = true;
     newAudio.volume = 0;
     audioRef.current = newAudio;
-    currentTrackRef.current = targetTrack;
 
     const handleError = (e: Event) => {
       console.error(`Failed to load ${targetTrack}`, e);
     };
 
     const startPlayback = () => {
-      if (!isSoundOn) return;
-
-      newAudio.play().catch(() => {
-        // Autoplay blocked - will play on user interaction
-      });
-
-      // Fade in the new track
-      const fadeSteps = 50;
-      const fadeInterval = 2000 / fadeSteps; // 2 second fade in
-      const volumeStep = TARGET_VOLUME / fadeSteps;
-
-      let currentStep = 0;
-      fadeIntervalRef.current = setInterval(() => {
-        currentStep++;
-        const newVolume = Math.min(volumeStep * currentStep, TARGET_VOLUME);
-        newAudio.volume = newVolume;
-
-        if (currentStep >= fadeSteps) {
-          if (fadeIntervalRef.current) {
-            clearInterval(fadeIntervalRef.current);
-            fadeIntervalRef.current = null;
-          }
-        }
-      }, fadeInterval);
+      // Skip if sound is off or this track was replaced before it loaded
+      if (!isSoundOnRef.current || audioRef.current !== newAudio) return;
+      playWithFadeIn(newAudio, fadeIntervalRef);
     };
 
-    newAudio.addEventListener("error", handleError);
+    // Not removed on cleanup: startPlayback already ignores replaced tracks, and
+    // removing it would strand the track if the effect re-runs before it loads
+    newAudio.addEventListener("error", handleError, { once: true });
     newAudio.addEventListener("canplaythrough", startPlayback, { once: true });
-
-    return () => {
-      newAudio.removeEventListener("error", handleError);
-    };
-  }, [screen, selectedCharacter, isSoundOn]);
+  }, [screen, selectedCharacter]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
+      stopFade(fadeIntervalRef);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
