@@ -26,6 +26,17 @@ function HomeContent() {
     characterIndex >= 0 ? characters[characterIndex] : null
   );
   const [isExiting, setIsExiting] = useState(false);
+  // False for the drawer's first frame so it mounts off-screen, then slides up
+  const [isDrawerUp, setIsDrawerUp] = useState(false);
+  const isDrawerOpen = selectedEthan !== null;
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+    // Two frames so the off-screen position is painted before transitioning
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setIsDrawerUp(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isDrawerOpen]);
   const [lastViewedCharacterIndex, setLastViewedCharacterIndex] = useState<
     number | null
   >(null);
@@ -105,6 +116,7 @@ function HomeContent() {
         : -1;
       setLastViewedCharacterIndex(index >= 0 ? index : null);
       setSelectedEthan(null);
+      setIsDrawerUp(false);
       setIsExiting(false);
       // Drop ?projects=1 but keep the character so the selection screen remembers it
       router.replace(
@@ -138,9 +150,12 @@ function HomeContent() {
           className="fixed inset-0 z-50 overflow-y-auto overscroll-none"
           style={{
             backgroundColor: selectedEthan.color,
-            transform: isExiting ? "translateY(100vh)" : "translateY(0)",
+            // Open and close are both transitions (not a keyframe animation, which
+            // would override the transform and slide the drawer back up if it was
+            // closed mid-open), so closing always starts from the current position
+            transform:
+              isDrawerUp && !isExiting ? "translateY(0)" : "translateY(100vh)",
             transition: "transform 800ms ease-out",
-            animation: "slideUpFromBottom 800ms ease-out",
           }}
         >
           <TitleScreen
