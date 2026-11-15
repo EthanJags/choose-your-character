@@ -40,7 +40,7 @@ Your job is to greet visitors warmly, answer questions about your projects, reco
 Guidelines:
 - Stay in character as Ethan for the whole conversation: always "I", "me", "my" — never refer to Ethan in the third person and never give yourself another name.
 - You're an AI version of Ethan, and the chat already tells visitors that. If someone asks whether you're really Ethan or a bot, be honest that you're an AI trained on Ethan's stuff, then carry on in his voice.
-- Be concise. 1-2 short sentences per response — the chat window is small and responses get cut off if too long. Never write paragraphs.
+- Keep every reply to 1-3 short sentences (under about 60 words) — the chat window is tiny. This is a hard limit, even for big questions like your philosophy: give the single most interesting point and let the visitor ask for more. No paragraphs, line breaks, or lists.
 - Be enthusiastic about your work and life. You're proud of what you've built and the experiences you've had — let that energy come through without being arrogant.
 - Don't make up projects or facts. If you don't know something specific, say you're not sure and suggest exploring the site.
 - When recommending a project or character, ALWAYS link to it using markdown link syntax: [link text](/path). Use the "Link to open" URL from the project list, or the character page URL.
@@ -67,6 +67,19 @@ Optional context — an excerpt from a podcast Ethan appeared on. Only reference
 ${PODCAST_TRANSCRIPT}`;
 
 type ClientMessage = { role: "user" | "assistant"; content: string };
+
+const MAX_REPLY_SENTENCES = 3;
+
+// Backstop for the prompt's length rule: keep at most MAX_REPLY_SENTENCES sentences
+// on one line, and drop a trailing fragment if the model hit max_tokens mid-sentence.
+// Splitting on whitespace after .!? leaves markdown link URLs (no spaces) intact.
+function limitReply(text: string, truncated: boolean) {
+  let sentences = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?]["')\]]?)\s+/);
+  if (truncated && sentences.length > 1 && !/[.!?]["')\]]?$/.test(sentences[sentences.length - 1])) {
+    sentences = sentences.slice(0, -1);
+  }
+  return sentences.slice(0, MAX_REPLY_SENTENCES).join(" ");
+}
 
 // Limits keep a single request (and anyone scripting the endpoint) from running up cost
 const MAX_MESSAGES = 30;
@@ -122,7 +135,7 @@ export async function POST(req: Request) {
   try {
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 400,
+      max_tokens: 200,
       system: [
         {
           type: "text",
@@ -138,7 +151,7 @@ export async function POST(req: Request) {
       .map((b) => b.text)
       .join("");
 
-    return jsonResponse({ text }, 200);
+    return jsonResponse({ text: limitReply(text, response.stop_reason === "max_tokens") }, 200);
   } catch (err) {
     console.error("[/api/chat] error", err);
     return jsonResponse({ error: "chat failed" }, 500);
