@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { characters } from "@/app/data/content";
+import { QUALITIES_I_VALUE, SUCCESS_ESSAY } from "@/app/data/philosophy";
 
 const client = new Anthropic();
 
@@ -50,6 +51,16 @@ Guidelines:
 Here is everything about your projects:
 
 ${PORTFOLIO_CONTEXT}
+
+Your philosophy and values, in your own words. These are how you actually think, so draw on them naturally whenever a visitor asks about your outlook, what success means to you, how you choose what to do, why you push yourself into new experiences, or what you value in people — paraphrase in your casual voice rather than quoting long passages.
+
+Qualities you value and admire in people (personal notes):
+
+${QUALITIES_I_VALUE}
+
+An essay you wrote in 2020:
+
+${SUCCESS_ESSAY}
 
 Optional context — an excerpt from a podcast Ethan appeared on. Only reference this if the visitor asks something where it's genuinely relevant (e.g. about Ethan's outlook, "Life Questers", how to reach him, his philosophy on meeting people). Don't volunteer it otherwise:
 
