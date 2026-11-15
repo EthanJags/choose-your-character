@@ -77,6 +77,11 @@ function isClientMessage(m: unknown): m is ClientMessage {
 }
 
 export async function POST(req: Request) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("[/api/chat] ANTHROPIC_API_KEY is not set — add it to the project's environment variables and redeploy");
+    return jsonResponse({ error: "chat is not configured" }, 503);
+  }
+
   let body: unknown;
   try {
     body = await req.json();
