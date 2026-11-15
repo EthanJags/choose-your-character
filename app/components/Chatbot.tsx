@@ -75,7 +75,7 @@ function renderWithLinks(
 const MAX_INPUT_LENGTH = 1000;
 
 const INITIAL_MESSAGES: Message[] = [
-  { from: "bot", text: "Hi! I'm Camden, a chatbot trained on all of Ethan's digital image. What is your name?" },
+  { from: "bot", text: "Hey, I'm Ethan! Well, an AI version of me, trained on everything I've put online. What's your name?" },
 ];
 
 type Theme = {
