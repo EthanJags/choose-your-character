@@ -81,26 +81,44 @@ const INITIAL_MESSAGES: Message[] = [
 type Theme = {
   accent: string;
   accentText: string;
+  linkColor: string;
   panelBg: string;
 };
+
+const INK = "#171717";
 
 const DEFAULT_THEME: Theme = {
   accent: "#FF5100",
   accentText: "#FFE8BE",
+  linkColor: "#FF5100",
   panelBg: "#FFF7EC",
 };
 
+function luminance(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: string, b: string) {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 function buildTheme(detail: { color: string; secondaryColor: string; thirdColor: string } | null): Theme {
   if (!detail) return DEFAULT_THEME;
-  const accent =
-    detail.thirdColor && detail.thirdColor !== detail.secondaryColor
-      ? detail.thirdColor
-      : detail.color;
-  return {
-    accent,
-    accentText: detail.secondaryColor,
-    panelBg: "#FFF7EC",
-  };
+  // Match the page: the character's background color with its heading color on top.
+  // When those two are too close to read at chat size (adventurer's cream on
+  // lavender), fall back to the dark ink used for the chat's outlines.
+  const accent = detail.color;
+  const accentText = contrast(detail.secondaryColor, accent) >= 2.5 ? detail.secondaryColor : INK;
+  // Links sit on white bot bubbles, so use whichever character color reads best there
+  const linkColor = [detail.color, detail.secondaryColor, detail.thirdColor].reduce((best, c) =>
+    contrast(c, "#ffffff") > contrast(best, "#ffffff") ? c : best
+  );
+  return { accent, accentText, linkColor, panelBg: "#FFF7EC" };
 }
 
 export default function Chatbot() {
@@ -351,7 +369,7 @@ export default function Chatbot() {
               }}
             >
               {m.from === "bot"
-                ? renderWithLinks(m.text, (href) => router.push(href), theme.accent)
+                ? renderWithLinks(m.text, (href) => router.push(href), theme.linkColor)
                 : m.text}
             </div>
           ))}
