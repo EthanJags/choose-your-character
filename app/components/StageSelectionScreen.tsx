@@ -6,6 +6,7 @@ import posthog from "posthog-js";
 import Buttons from "./Buttons";
 import Arrow from "./Arrow";
 import AboutSection from "./AboutSection";
+import ChatSection from "./ChatSection";
 import type { Ethan } from "@/app/page";
 import { uiStrings } from "@/app/data/content";
 import { playSfx } from "@/app/lib/sound";
@@ -19,6 +20,8 @@ type StageSelectionScreenProps = {
   onSelect: (ethan: Ethan) => void;
   active?: boolean;
 };
+
+type Tab = "select" | "about" | "chat";
 
 type AnimationState = {
   outgoingIndex: number | null;
@@ -60,8 +63,10 @@ export default function StageSelectionScreen({
   // SoundToggle broadcasts the current value on mount
   const [isSoundOn, setIsSoundOn] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"select" | "about">("select");
-  const [hoveredTab, setHoveredTab] = useState<"select" | "about" | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("select");
+  const [hoveredTab, setHoveredTab] = useState<Tab | null>(null);
+  // Chat stays mounted once opened so the conversation survives tab switches
+  const [hasOpenedChat, setHasOpenedChat] = useState(false);
 
   const currentEthan = ethans[animState.incomingIndex];
 
@@ -187,7 +192,7 @@ export default function StageSelectionScreen({
 
     const handleWheel = (e: WheelEvent) => {
       if (!active) return;
-      if (activeTab === "about") return;
+      if (activeTab !== "select") return;
       if (wheelLockedRef.current) {
         lockWheelUntilQuiet();
         return;
@@ -214,13 +219,13 @@ export default function StageSelectionScreen({
 
     const handleTouchStart = (e: TouchEvent) => {
       if (!active) return;
-      if (activeTab === "about") return;
+      if (activeTab !== "select") return;
       touchStartX.current = e.touches[0].clientX;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (!active) return;
-      if (activeTab === "about") return;
+      if (activeTab !== "select") return;
       if (animState.phase === "animating") return;
       const deltaX = touchStartX.current - e.changedTouches[0].clientX;
       const threshold = 50;
@@ -242,7 +247,7 @@ export default function StageSelectionScreen({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!active) return;
-      if (activeTab === "about") return;
+      if (activeTab !== "select") return;
 
       if (e.key === "ArrowLeft") {
         e.preventDefault();
@@ -270,13 +275,19 @@ export default function StageSelectionScreen({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [active, activeTab, animState.incomingIndex, animState.phase, ethans, isSoundOn, onSelect, navigateTo]);
 
-  const handleTabClick = (tab: "select" | "about") => {
+  const handleTabClick = (tab: Tab) => {
     if (tab === activeTab) return;
     if (isSoundOn) playSfx("/sound-effects/menuselect.mov", 0.15);
     if (tab === "about") {
       posthog.capture("about_tab_viewed", {
         previous_tab: activeTab,
       });
+    }
+    if (tab === "chat") {
+      posthog.capture("chat_tab_viewed", {
+        previous_tab: activeTab,
+      });
+      setHasOpenedChat(true);
     }
     setActiveTab(tab);
   };
@@ -328,6 +339,18 @@ export default function StageSelectionScreen({
           }}
         >
           About
+        </button>
+        <button
+          onClick={() => handleTabClick("chat")}
+          onMouseEnter={() => setHoveredTab("chat")}
+          onMouseLeave={() => setHoveredTab(null)}
+          className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide transition-colors duration-300"
+          style={{
+            backgroundColor: activeTab === "chat" ? "#d1d5db" : "transparent",
+            color: activeTab === "chat" ? "#000" : hoveredTab === "chat" ? "#171717" : "#6B6B6B",
+          }}
+        >
+          Chat
         </button>
       </div>
 
@@ -475,6 +498,9 @@ export default function StageSelectionScreen({
       )}
 
       {activeTab === "about" && <AboutSection />}
+      {hasOpenedChat && (
+        <ChatSection character={currentEthan} active={activeTab === "chat"} />
+      )}
     </div>
   );
 }
