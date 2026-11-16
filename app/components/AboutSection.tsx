@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useLayoutEffect, useRef, useState } from "react";
 
 const iconClass = "w-7 h-7 sm:w-8 sm:h-8";
 
@@ -27,17 +28,71 @@ function SocialIcon({
   );
 }
 
+// The notebook is laid out at its natural size, then scaled as a whole so it
+// fits any viewport: shrunk on short screens, grown on large ones. Below
+// MIN_SCALE the text would be too small to read, so the page scrolls instead.
+const MIN_SCALE = 0.7;
+const MAX_SCALE = 1.35;
+
 export default function AboutSection() {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const notebookRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<{ scale: number; w: number; h: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current;
+    const notebook = notebookRef.current;
+    if (!outer || !notebook) return;
+    const update = () => {
+      const cs = getComputedStyle(outer);
+      const availH =
+        outer.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const availW =
+        outer.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const w = notebook.offsetWidth;
+      const h = notebook.offsetHeight;
+      if (!w || !h) return;
+      const scale = Math.max(MIN_SCALE, Math.min(availH / h, availW / w, MAX_SCALE));
+      setFit((prev) =>
+        prev && prev.scale === scale && prev.w === w && prev.h === h ? prev : { scale, w, h }
+      );
+    };
+    update();
+    // transforms don't affect observed sizes, so this only fires on real
+    // layout changes (window resize, fonts loading in)
+    const ro = new ResizeObserver(update);
+    ro.observe(outer);
+    ro.observe(notebook);
+    return () => ro.disconnect();
+  }, []);
+
+  const scale = fit?.scale ?? 1;
+
   return (
-    <div className="absolute inset-0 z-15 flex flex-col items-center pt-28 px-4 pb-6 sm:pt-40 sm:pb-24 overflow-y-auto [@media(min-height:1000px)]:sm:overflow-hidden">
-      <div className="flex justify-center p-4 sm:p-2 shrink-0">
-        <div className="relative w-[90vw] max-w-[680px] [@media(min-height:1000px)]:sm:h-[calc(100vh-10rem-6rem)] min-h-[300px] shrink-0">
+    <div
+      ref={outerRef}
+      className="absolute inset-0 z-15 flex flex-col items-center pt-24 px-4 pb-6 overflow-y-auto overflow-x-hidden"
+    >
+      {/* my-auto centers vertically but still lets the page scroll from the top when it overflows */}
+      <div
+        className="relative my-auto shrink-0"
+        style={fit ? { width: fit.w * scale, height: fit.h * scale } : undefined}
+      >
+        <div
+          ref={notebookRef}
+          className="relative w-[min(680px,90vw)]"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            visibility: fit ? "visible" : "hidden",
+          }}
+        >
         <Image
           src="/about/notebook.png"
           alt=""
           fill
           className="object-fill block"
-          sizes="90vw"
+          sizes="(min-width: 760px) 920px, 90vw"
           style={{ filter: "drop-shadow(0 20px 50px rgba(0,0,0,0.5))" }}
           aria-hidden
         />
@@ -50,7 +105,7 @@ export default function AboutSection() {
           aria-hidden
         />
         <div
-          className="relative [@media(min-height:1000px)]:sm:absolute [@media(min-height:1000px)]:sm:inset-0 pt-4 pb-6 px-8 sm:pt-8 sm:px-14 flex flex-col overflow-y-auto"
+          className="relative pt-6 pb-8 px-8 sm:pt-8 sm:pb-10 sm:px-14 flex flex-col"
           style={{ fontFamily: "var(--font-caveat), cursive" }}
         >
           <h1
