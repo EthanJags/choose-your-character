@@ -209,6 +209,7 @@ export const characters: CharacterEntry[] = [
         awards: [
           "Admitted to Berkeley SkyDeck Pad-13 (Batch 16)",
           "3rd Place, UC Launch Final Demo Day (Spring 2023)",
+          "Haas Seed Fund winner",
           "#4 Product of the Day on Product Hunt",
         ],
         description: `Scribble AI is live on iOS and Android, with over 20,000 downloads and 800,000 pieces of content generated so far.
