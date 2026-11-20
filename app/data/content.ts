@@ -17,6 +17,12 @@ export type ProjectEntry = {
   devpostUrl?: string;
   devpostLabel?: string;
   hackathonAwards?: string;
+  /** Short one-line pitch shown under the title on the project page */
+  tagline?: string;
+  /** Headline numbers shown as a stat row on the project page */
+  stats?: { value: string; label: string }[];
+  /** Awards / recognition shown as a list on the project page */
+  awards?: string[];
   /** Override aspect ratio for thumbnail, e.g. "1141/720" (default: "1141/652") */
   aspectRatio?: string;
 };
@@ -193,14 +199,23 @@ export const characters: CharacterEntry[] = [
         subtitle: "20,000+ Downloads, #4 Product of the Day on Product Hunt, $15,000 in grants awarded",
         content: "",
         slug: "scribble-ai",
-        description: `Awards: Admitted to SkyDeck Pad-13 (Batch 16), 3rd Place in UC Launch Final Demo Day Spring 2023
+        tagline: "Bridging the accessibility gap in generative AI.",
+        stats: [
+          { value: "20K+", label: "Downloads" },
+          { value: "800K+", label: "Pieces of content generated" },
+          { value: "#4", label: "Product of the Day on Product Hunt" },
+          { value: "$15K", label: "In grants awarded" },
+        ],
+        awards: [
+          "Admitted to Berkeley SkyDeck Pad-13 (Batch 16)",
+          "3rd Place, UC Launch Final Demo Day (Spring 2023)",
+          "#4 Product of the Day on Product Hunt",
+        ],
+        description: `Scribble AI is live on iOS and Android, with over 20,000 downloads and 800,000 pieces of content generated so far.
 
-Bridging the accessibility gap in generative AI
-Download now: https://apps.apple.com/us/app/scribble-ai/id1662081018
+Scribble AI gives people a mobile interface to generate customized text in 20+ pre-built formats, styles, and languages, without ever having to write a prompt. Our pre-optimized prompt engineering runs in the app's backend, so non-technical users can generate and share content in seconds with just three taps.
 
-Scribble AI is live on iOS and Android with over 20,000 downloads and 800,000 pieces of content generated so far.
-
-Scribble AI provides a mobile interface to generate customized text in 20+ pre-built formats, styles, and languages without having to write prompts for the AI. Through our pre-optimized prompt engineering in the app's backend, non-technical consumers can generate and share textual content within seconds with just three clicks. For individuals who write a lot of content each day, whether a Twitter influencer writing DMs or sales rep making a quick pitch, the app's premium version (in development) customizes the pre-built prompts to their needs, allowing the user to access higher quality content than ChatGPT for faster and cheaper.`,
+For people who write a lot every day, whether that's an influencer writing DMs or a sales rep making a quick pitch, the premium version tailors the pre-built prompts to their needs, delivering higher-quality content than ChatGPT, faster and cheaper.`,
         demoUrl: "https://apps.apple.com/us/app/scribble-ai/id1662081018",
         demoLabel: "Download the app now",
       },

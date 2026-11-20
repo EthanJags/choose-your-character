@@ -28,6 +28,33 @@ function getProjectImages(projectsFolder: string, projectSlug: string): string[]
     .map((f) => `/projects/${projectsFolder}/${projectSlug}/${f}`);
 }
 
+/**
+ * Render description paragraphs. Short "Label: text" paragraphs get a bold
+ * label, and short standalone lines are treated as sub-headings.
+ */
+function renderDescription(description: string) {
+  return description.split("\n\n").map((paragraph, i) => {
+    const colonMatch = paragraph.match(/^([^\n]+?):\s*([\s\S]*)$/);
+    if (colonMatch && colonMatch[1].length < 50 && !colonMatch[1].includes("http")) {
+      const [, label, content] = colonMatch;
+      return (
+        <div key={i}>
+          <h3 className="font-semibold mb-1">{label}:</h3>
+          {content ? <p>{content}</p> : null}
+        </div>
+      );
+    }
+    if (paragraph.length < 40) {
+      return (
+        <h3 key={i} className="font-semibold">
+          {paragraph}
+        </h3>
+      );
+    }
+    return <p key={i}>{paragraph}</p>;
+  });
+}
+
 export async function generateStaticParams() {
   return characters.flatMap((char) =>
     char.projects.map((proj) => ({
@@ -50,6 +77,15 @@ export default async function ProjectPage({
   if (!character || !project) notFound();
 
   const images = getProjectImages(character.projectsFolder, projectSlug);
+  const [heroImage, ...galleryImages] = images;
+
+  const fg = character.secondaryColor;
+  const heading = {
+    color: fg,
+    fontFamily: "var(--font-londrina-solid), sans-serif",
+  };
+  const shadow = { boxShadow: "0px 20px 40px 0px rgba(0,0,0,0.3)" };
+  const frame = "ring-1 ring-black/10";
 
   return (
     <div
@@ -87,120 +123,159 @@ export default async function ProjectPage({
         </Link>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 md:px-8 pb-20">
-        {((project.demoUrl && project.demoLabel) || project.devpostUrl) && (
-          <ProjectExternalLinks
-            projectTitle={project.title}
-            projectSlug={projectSlug}
-            characterName={character.name}
-            characterSlug={characterSlug}
-            secondaryColor={character.secondaryColor}
-            demoUrl={project.demoUrl}
-            demoLabel={project.demoLabel}
-            devpostUrl={project.devpostUrl}
-            devpostLabel={project.devpostLabel}
-          />
-        )}
-        <div className="mb-12">
-          <AutoFitText
-            as="h1"
-            className="uppercase text-center md:text-left"
-            baseFontSize="clamp(2.5rem, 10vw, 6rem)"
-            style={{
-              color: character.secondaryColor,
-              fontFamily: "var(--font-londrina-solid), sans-serif",
-              fontWeight: 900,
-              lineHeight: 1,
-            }}
-          >
-            {project.title}
-          </AutoFitText>
-          {/* Subtitles can be long, so they wrap instead of shrinking to fit one line */}
-          <p
-            className="uppercase mt-2 text-center md:text-left"
-            style={{
-              color: character.secondaryColor,
-              fontFamily: "var(--font-londrina-solid), sans-serif",
-              fontWeight: 900,
-              opacity: 0.9,
-              fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
-            }}
-          >
-            {project.subtitle}
-          </p>
-        </div>
-
-        <div
-          className="columns-2 md:columns-3 gap-4 mb-12"
-          style={{ columnFill: "balance" }}
-        >
-          {images.map((src, i) => (
-            <div
-              key={src}
-              className="break-inside-avoid mb-4 overflow-hidden rounded-sm"
-              style={{ boxShadow: "0px 20px 26.6px 6px rgba(0,0,0,0.25)" }}
+      <main className="max-w-6xl mx-auto px-4 md:px-8 pb-24">
+        {/* Hero: title, pitch and call to action beside the lead image */}
+        <section className="grid gap-8 md:gap-12 md:grid-cols-[1fr_1.1fr] items-center mb-12 md:mb-16">
+          <div className="min-w-0 text-center md:text-left">
+            <AutoFitText
+              as="h1"
+              className="uppercase"
+              baseFontSize="clamp(3rem, 9vw, 6.5rem)"
+              style={{ ...heading, fontWeight: 900, lineHeight: 0.95 }}
             >
+              {project.title}
+            </AutoFitText>
+            <p
+              className="mt-4 text-xl md:text-2xl leading-snug"
+              style={{ color: fg, opacity: 0.9 }}
+            >
+              {project.tagline ?? project.subtitle}
+            </p>
+            {((project.demoUrl && project.demoLabel) || project.devpostUrl) && (
+              <div className="mt-8 flex justify-center md:justify-start">
+                <ProjectExternalLinks
+                  projectTitle={project.title}
+                  projectSlug={projectSlug}
+                  characterName={character.name}
+                  characterSlug={characterSlug}
+                  secondaryColor={fg}
+                  backgroundColor={character.color}
+                  demoUrl={project.demoUrl}
+                  demoLabel={project.demoLabel}
+                  devpostUrl={project.devpostUrl}
+                  devpostLabel={project.devpostLabel}
+                />
+              </div>
+            )}
+          </div>
+          {heroImage && (
+            <div className={`overflow-hidden rounded-2xl ${frame}`} style={shadow}>
               <img
-                src={src}
-                alt={`${project.title} - Photo ${i + 1}`}
+                src={heroImage}
+                alt={`${project.title} preview`}
                 className="w-full h-auto block"
-                loading={i < 4 ? "eager" : "lazy"}
+                loading="eager"
               />
             </div>
-          ))}
-        </div>
+          )}
+        </section>
 
-        {project.description && (
-          <div
-            className={`max-w-2xl text-lg md:text-xl leading-relaxed [overflow-wrap:anywhere] ${project.hackathonAwards ? "mb-4" : "mb-12"}`}
-            style={{
-              color: character.secondaryColor,
-              opacity: 0.95,
-            }}
+        {/* Headline numbers (falls back to the subtitle when no stats are set) */}
+        {project.stats && project.stats.length > 0 && (
+          <section
+            className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-2xl overflow-hidden mb-12 md:mb-16"
+            style={{ backgroundColor: `${fg}40`, border: `1px solid ${fg}40` }}
           >
-            {project.description.split("\n\n").map((paragraph, i) => {
-              const colonMatch = paragraph.match(/^(.+?):\s*(.*)$/);
-              const isLabelContent =
-                colonMatch &&
-                colonMatch[1].length < 50 &&
-                (colonMatch[2].length > 0 || paragraph.endsWith(":"));
-              const isStandaloneHeader =
-                (paragraph.length < 60 && paragraph.includes(" - ")) ||
-                (paragraph.length < 40 && !paragraph.includes(":"));
-              if (isLabelContent && colonMatch) {
-                const [, label, content] = colonMatch;
-                return (
-                  <div key={i} className={i > 0 ? "mt-4" : ""}>
-                    <h3 className="font-semibold mb-1">{label}:</h3>
-                    {content ? <p>{content}</p> : null}
-                  </div>
-                );
-              }
-              if (isStandaloneHeader) {
-                return (
-                  <h3 key={i} className={`font-semibold ${i > 0 ? "mt-4" : ""}`}>
-                    {paragraph}
-                  </h3>
-                );
-              }
-              return (
-                <p key={i} className={i > 0 ? "mt-4" : ""}>
-                  {paragraph}
-                </p>
-              );
-            })}
-          </div>
+            {project.stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="px-4 py-6 md:px-6 md:py-8 text-center md:text-left"
+                style={{ backgroundColor: character.color }}
+              >
+                <div
+                  className="text-4xl md:text-5xl"
+                  style={{ ...heading, fontWeight: 900, lineHeight: 1 }}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  className="mt-2 text-sm md:text-base leading-snug"
+                  style={{ color: fg, opacity: 0.8 }}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </section>
         )}
-        {project.hackathonAwards && (
-          <p
-            className="mb-12 max-w-2xl text-base md:text-lg italic"
-            style={{
-              color: character.secondaryColor,
-              opacity: 0.85,
-            }}
+
+        {/* Remaining photos: two-up on desktop, cropped to a shared height */}
+        {galleryImages.length > 0 && (
+          <section
+            className={`grid gap-4 md:gap-6 mb-12 md:mb-16 ${
+              galleryImages.length === 1 ? "" : "sm:grid-cols-2"
+            }`}
           >
-            {project.hackathonAwards}
-          </p>
+            {galleryImages.map((src, i) => (
+              <div
+                key={src}
+                className={`overflow-hidden rounded-2xl ${frame}`}
+                style={shadow}
+              >
+                <img
+                  src={src}
+                  alt={`${project.title} - Photo ${i + 2}`}
+                  className="w-full h-64 sm:h-80 md:h-[26rem] object-cover object-left-top block"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* About + awards */}
+        {(project.description || project.awards?.length || project.hackathonAwards) && (
+          <section
+            className={`grid gap-10 md:gap-16 ${
+              project.awards?.length ? "md:grid-cols-[1.6fr_1fr]" : ""
+            }`}
+          >
+            {project.description && (
+              <div className="min-w-0">
+                <h2
+                  className="uppercase text-3xl md:text-4xl mb-5"
+                  style={{ ...heading, fontWeight: 900 }}
+                >
+                  About
+                </h2>
+                <div
+                  className="max-w-2xl text-lg md:text-xl leading-relaxed space-y-5 [overflow-wrap:anywhere]"
+                  style={{ color: fg, opacity: 0.92 }}
+                >
+                  {renderDescription(project.description)}
+                </div>
+                {project.hackathonAwards && (
+                  <p
+                    className="mt-6 max-w-2xl text-base md:text-lg italic"
+                    style={{ color: fg, opacity: 0.85 }}
+                  >
+                    {project.hackathonAwards}
+                  </p>
+                )}
+              </div>
+            )}
+            {project.awards && project.awards.length > 0 && (
+              <aside
+                className="rounded-2xl p-6 md:p-8 self-start"
+                style={{ border: `2px solid ${fg}`, color: fg }}
+              >
+                <h2
+                  className="uppercase text-2xl md:text-3xl mb-5"
+                  style={{ ...heading, fontWeight: 900 }}
+                >
+                  Recognition
+                </h2>
+                <ul className="space-y-4">
+                  {project.awards.map((award) => (
+                    <li key={award} className="flex gap-3 text-base md:text-lg leading-snug">
+                      <span aria-hidden className="mt-[0.15em] shrink-0">★</span>
+                      <span>{award}</span>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            )}
+          </section>
         )}
       </main>
     </div>
