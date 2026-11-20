@@ -3,7 +3,52 @@
 import Image from "next/image";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { useSearchParams } from "next/navigation";
 import type { Ethan, Project } from "@/app/page";
+import {
+  POLAROID_VARIANTS,
+  VARIANT_SECTION_BG,
+  VARIANT_WAVE_FILL,
+  VariantGallery,
+  type PolaroidVariant,
+} from "./PolaroidVariants";
+
+function ProjectLink({
+  project,
+  ethan,
+  children,
+}: {
+  project: Project;
+  ethan: Ethan;
+  children: React.ReactNode;
+}) {
+  const href =
+    project.externalLinkOnly && project.demoUrl
+      ? project.demoUrl
+      : `/project/${ethan.slug}/${project.slug}`;
+  return (
+    <Link
+      href={href}
+      target={project.externalLinkOnly ? "_blank" : undefined}
+      rel={project.externalLinkOnly ? "noopener noreferrer" : undefined}
+      className="group block"
+      onClick={() => {
+        posthog.capture(
+          project.externalLinkOnly ? "project_link_clicked" : "project_detail_opened",
+          {
+            project_title: project.title,
+            project_slug: project.slug,
+            character_name: ethan.name,
+            character_slug: ethan.slug,
+            ...(project.externalLinkOnly ? { link_type: "demo", url: project.demoUrl } : {}),
+          }
+        );
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
 
 function PolaroidCard({
   project,
@@ -85,6 +130,16 @@ function PolaroidCard({
 const GALLERY_BG = "#EDE8DF";
 
 export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
+  const param = useSearchParams().get("polaroid");
+  const variant = POLAROID_VARIANTS.includes(param as PolaroidVariant)
+    ? (param as PolaroidVariant)
+    : null;
+  const waveFill = (variant && VARIANT_WAVE_FILL[variant]) || GALLERY_BG;
+  const sectionStyle = {
+    backgroundColor: GALLERY_BG,
+    ...(variant ? VARIANT_SECTION_BG[variant] : {}),
+  };
+
   return (
     <div className="relative">
       {/* Wavy transition - overlaps bottom of title screen */}
@@ -97,7 +152,7 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
         >
           <path
             d="M0,80 C240,160 480,0 720,80 C960,160 1200,0 1440,80 L1440,180 L0,180 Z"
-            fill={GALLERY_BG}
+            fill={waveFill}
           />
         </svg>
       </div>
@@ -105,8 +160,19 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
       {/* Gallery section */}
       <section
         className="relative z-20 px-8 md:px-16 lg:px-24 pt-8 pb-24 md:pt-12 md:pb-32"
-        style={{ backgroundColor: GALLERY_BG }}
+        style={sectionStyle}
       >
+        {variant ? (
+          <VariantGallery
+            variant={variant}
+            ethan={ethan}
+            renderLink={(project, children) => (
+              <ProjectLink project={project} ethan={ethan}>
+                {children}
+              </ProjectLink>
+            )}
+          />
+        ) : (
         <div className="columns-1 md:columns-2 lg:columns-3 gap-10 lg:gap-12 max-w-[1200px] mx-auto">
           {ethan.projects.map((project, i) => (
             <div key={project.slug} className="mb-10 lg:mb-12 break-inside-avoid">
@@ -118,6 +184,7 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
             </div>
           ))}
         </div>
+        )}
       </section>
     </div>
   );
