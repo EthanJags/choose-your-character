@@ -17,8 +17,17 @@ export const POLAROID_VARIANTS: PolaroidVariant[] = [
   "corkboard",
 ];
 
-const TILTS = [-3.5, 2.5, -1.5, 3, -2.5, 1.5, -3, 2];
-const tilt = (i: number) => TILTS[i % TILTS.length];
+/**
+ * Random-looking but stable tilt (same on server and client) for a project.
+ * `salt` gives independent angles for the photo, its note, its tape, etc.
+ * Magnitude is between min and max degrees, with a random sign.
+ */
+function tiltFor(slug: string, salt: string, max = 3.5, min = 0.8) {
+  const h = hash(`${slug}:${salt}`);
+  // FNV's low bits are weak, so take the sign and size from higher bits
+  const mag = min + (((h >>> 8) % 1000) / 1000) * (max - min);
+  return Math.round(((h >>> 20) & 1 ? mag : -mag) * 10) / 10;
+}
 /** Tilt only applies from md up (see TILTED class); phones get straight cards. */
 const tiltVar = (deg: number) => ({ "--tilt": `${deg}deg` }) as React.CSSProperties;
 const TILTED = "md:[transform:rotate(var(--tilt))]";
@@ -27,16 +36,18 @@ const handwriting = "var(--font-caveat), cursive";
 const londrina = "var(--font-londrina-solid), sans-serif";
 
 type CardProps = { project: Project; ethan: Ethan; index: number };
+/** Layout-adjusted values passed down by the masonry boards (see useBoardLayout). */
+type BoardCardProps = { noteColor?: string; photoTilt?: number; noteTilt?: number };
 
 /* ------------------------------------------------------------------ */
 /* 1. Taped — scattered snapshots stuck down with washi tape           */
 /* ------------------------------------------------------------------ */
-function TapedCard({ project, ethan, index }: CardProps) {
-  const tapeTilt = index % 2 === 0 ? -4 : 5;
+function TapedCard({ project, ethan, photoTilt }: CardProps & BoardCardProps) {
+  const tapeTilt = tiltFor(project.slug, "tape", 6, 2);
   return (
     <div
       className={`relative bg-white p-3 pb-6 shadow-[3px_8px_20px_rgba(0,0,0,0.22)] transition-all duration-300 ease-out ${TILTED} md:group-hover:[transform:none] group-hover:-translate-y-2 group-hover:shadow-[6px_16px_32px_rgba(0,0,0,0.3)]`}
-      style={tiltVar(tilt(index))}
+      style={tiltVar(photoTilt ?? tiltFor(project.slug, "photo"))}
     >
       <div
         className="absolute -top-4 left-1/2 h-8 w-28 -translate-x-1/2 opacity-80"
@@ -65,8 +76,8 @@ function TapedCard({ project, ethan, index }: CardProps) {
 /* ------------------------------------------------------------------ */
 /* 2. Clothesline — photos hung on string with wooden pegs             */
 /* ------------------------------------------------------------------ */
-function ClotheslineCard({ project, index }: CardProps) {
-  const swing = tilt(index) * 0.6;
+function ClotheslineCard({ project }: CardProps) {
+  const swing = tiltFor(project.slug, "swing", 2.2, 0.5);
   return (
     <div className="relative pt-6">
       {/* peg */}
@@ -160,30 +171,47 @@ function initialNoteColors(projects: Project[]) {
   return out;
 }
 
+type BoardLayout = { colors: string[]; photoTilts: number[]; noteTilts: number[] };
+
 /**
- * Random-looking note colours that never match a card beside it in the same row
- * or directly above it. The masonry layout depends on photo heights and screen
- * width, so this measures where cards actually landed and re-runs on resize.
+ * Per-card note colours and tilts for the masonry boards. Everything starts
+ * random (hash-seeded, so server and client agree), then once the cards have
+ * landed we measure the actual rows and fix anything that looks uniform:
+ *  - no two cards in the same row, or stacked in a column, share a note colour
+ *  - a row never has every photo (or every note) leaning the same way
+ * Re-runs when the grid resizes (screen width, images loading).
  */
-function useNoteColors(projects: Project[], container: React.RefObject<HTMLDivElement | null>, enabled: boolean) {
-  const [colors, setColors] = useState(() => initialNoteColors(projects));
+function useBoardLayout(
+  projects: Project[],
+  container: React.RefObject<HTMLDivElement | null>,
+  enabled: boolean,
+  photoRange: [number, number]
+): BoardLayout {
+  const [max, min] = photoRange;
+  const base = (): BoardLayout => ({
+    colors: initialNoteColors(projects).map((c) => NOTE_COLORS[c]),
+    photoTilts: projects.map((p) => tiltFor(p.slug, "photo", max, min)),
+    noteTilts: projects.map((p) => tiltFor(p.slug, "note", 3.5, 1)),
+  });
+  const [layout, setLayout] = useState(base);
 
   useLayoutEffect(() => {
     const el = container.current;
     if (!enabled || !el) return;
-    const assign = () => {
+    const run = () => {
       const cards = [...el.children].map((c) => (c as HTMLElement).getBoundingClientRect());
       if (cards.length !== projects.length) return;
+      const sameRow = (a: DOMRect, b: DOMRect) =>
+        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.25 * Math.min(a.height, b.height);
       const order = cards.map((_, i) => i).sort((a, b) => cards[a].top - cards[b].top || cards[a].left - cards[b].left);
+
+      // Colours
       const out: number[] = new Array(projects.length).fill(-1);
       for (const i of order) {
-        const r = cards[i];
         const taken = new Set<number>();
         cards.forEach((o, j) => {
           if (j === i || out[j] < 0) return;
-          const sameRow = Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 0.25 * Math.min(r.height, o.height);
-          const sameCol = Math.abs(o.left - r.left) < 10;
-          if (sameRow || sameCol) taken.add(out[j]);
+          if (sameRow(cards[i], o) || Math.abs(o.left - cards[i].left) < 10) taken.add(out[j]);
         });
         const start = hash(projects[i].slug) % NOTE_COLORS.length;
         let pick = start;
@@ -193,20 +221,40 @@ function useNoteColors(projects: Project[], container: React.RefObject<HTMLDivEl
         }
         out[i] = pick;
       }
-      setColors((prev) => (prev.join() === out.join() ? prev : out));
+
+      // Tilts: group into rows, flip one card if a whole row leans the same way
+      const next = base();
+      const seen = new Set<number>();
+      for (const i of order) {
+        if (seen.has(i)) continue;
+        const row = order.filter((j) => !seen.has(j) && sameRow(cards[i], cards[j]));
+        row.forEach((j) => seen.add(j));
+        if (row.length < 2) continue;
+        for (const tilts of [next.photoTilts, next.noteTilts]) {
+          if (row.every((j) => Math.sign(tilts[j]) === Math.sign(tilts[row[0]]))) {
+            const j = row[hash(projects[row[0]].slug + tilts.length) % row.length];
+            tilts[j] = -tilts[j];
+          }
+        }
+      }
+      next.colors = out.map((c) => NOTE_COLORS[c]);
+      setLayout((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     };
-    assign();
-    const ro = new ResizeObserver(assign);
+    run();
+    const ro = new ResizeObserver(run);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [projects, container, enabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects, container, enabled, max, min]);
 
-  return colors.map((c) => NOTE_COLORS[c]);
+  return layout;
 }
 
-function CorkboardCard({ project, ethan, index, noteColor }: CardProps & { noteColor?: string }) {
+function CorkboardCard({ project, ethan, index, noteColor, photoTilt, noteTilt }: CardProps & BoardCardProps) {
+  const pt = photoTilt ?? tiltFor(project.slug, "photo", 2.6, 0.6);
+  const nt = noteTilt ?? tiltFor(project.slug, "note", 3.5, 1);
   return (
-    <div className={`relative transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.02] ${TILTED}`} style={tiltVar(tilt(index) * 0.7)}>
+    <div className={`relative transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.02] ${TILTED}`} style={tiltVar(pt)}>
       <div className="relative bg-white p-2.5 shadow-[2px_6px_14px_rgba(0,0,0,0.35)]">
         {/* pushpin */}
         <div
@@ -219,7 +267,8 @@ function CorkboardCard({ project, ethan, index, noteColor }: CardProps & { noteC
       </div>
       <div
         className={`relative -mt-6 ml-auto mr-2 w-[80%] p-3 shadow-[1px_4px_8px_rgba(0,0,0,0.25)] md:mr-[-4%] md:w-[72%] ${TILTED}`}
-        style={{ background: noteColor ?? NOTE_COLORS[index % NOTE_COLORS.length], ...tiltVar(-tilt(index + 1)) }}
+        style={{ background: noteColor ?? NOTE_COLORS[index % NOTE_COLORS.length], // the note sits inside the tilted card, so undo the card's tilt to make nt its on-screen angle
+          ...tiltVar(Math.round((nt - pt) * 10) / 10) }}
       >
         <p className="uppercase leading-tight text-gray-900" style={{ fontFamily: londrina, fontWeight: 900, fontSize: "clamp(1.25rem, 1.9vw, 1.6rem)" }}>
           {project.title}
@@ -293,7 +342,12 @@ export function VariantGallery({
 }) {
   const projects = ethan.projects;
   const gridRef = useRef<HTMLDivElement>(null);
-  const colors = useNoteColors(projects, gridRef, variant === "corkboard");
+  const board = useBoardLayout(
+    projects,
+    gridRef,
+    variant === "corkboard" || variant === "taped",
+    variant === "taped" ? [3.5, 0.8] : [2.6, 0.6]
+  );
 
   if (variant === "clothesline") {
     const rows: Project[][] = [];
@@ -323,7 +377,9 @@ export function VariantGallery({
           {renderLink(
             p,
             variant === "corkboard" ? (
-              <CorkboardCard project={p} ethan={ethan} index={i} noteColor={colors[i]} />
+              <CorkboardCard project={p} ethan={ethan} index={i} noteColor={board.colors[i]} photoTilt={board.photoTilts[i]} noteTilt={board.noteTilts[i]} />
+            ) : variant === "taped" ? (
+              <TapedCard project={p} ethan={ethan} index={i} photoTilt={board.photoTilts[i]} />
             ) : (
               <Card project={p} ethan={ethan} index={i} />
             )
