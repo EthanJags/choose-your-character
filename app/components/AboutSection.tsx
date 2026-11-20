@@ -128,7 +128,7 @@ export default function AboutSection() {
             }}
           >
             <p>
-              I&apos;m a full stack engineer and adventurer living in SF.
+              I&apos;m a full stack engineer and adventurer living in NYC.
             </p>
             <p>
               At work, I&apos;m obsessed with learning new things and creating
