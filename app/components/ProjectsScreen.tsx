@@ -168,7 +168,7 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
 
       {/* Gallery section */}
       <section
-        className="relative z-20 px-8 md:px-16 lg:px-24 pt-8 pb-24 md:pt-12 md:pb-32"
+        className="relative z-20 overflow-x-clip px-8 md:px-16 lg:px-24 pt-8 pb-24 md:pt-12 md:pb-32"
         style={{ backgroundColor: GALLERY_BG }}
       >
         {variant ? (

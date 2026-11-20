@@ -18,6 +18,9 @@ export const POLAROID_VARIANTS: PolaroidVariant[] = [
 
 const TILTS = [-3.5, 2.5, -1.5, 3, -2.5, 1.5, -3, 2];
 const tilt = (i: number) => TILTS[i % TILTS.length];
+/** Tilt only applies from md up (see TILTED class); phones get straight cards. */
+const tiltVar = (deg: number) => ({ "--tilt": `${deg}deg` }) as React.CSSProperties;
+const TILTED = "md:[transform:rotate(var(--tilt))]";
 
 const handwriting = "var(--font-caveat), cursive";
 const londrina = "var(--font-londrina-solid), sans-serif";
@@ -31,8 +34,8 @@ function TapedCard({ project, ethan, index }: CardProps) {
   const tapeTilt = index % 2 === 0 ? -4 : 5;
   return (
     <div
-      className="relative bg-white p-3 pb-6 shadow-[3px_8px_20px_rgba(0,0,0,0.22)] transition-all duration-300 ease-out group-hover:!rotate-0 group-hover:-translate-y-2 group-hover:shadow-[6px_16px_32px_rgba(0,0,0,0.3)]"
-      style={{ transform: `rotate(${tilt(index)}deg)` }}
+      className={`relative bg-white p-3 pb-6 shadow-[3px_8px_20px_rgba(0,0,0,0.22)] transition-all duration-300 ease-out ${TILTED} md:group-hover:[transform:none] group-hover:-translate-y-2 group-hover:shadow-[6px_16px_32px_rgba(0,0,0,0.3)]`}
+      style={tiltVar(tilt(index))}
     >
       <div
         className="absolute -top-4 left-1/2 h-8 w-28 -translate-x-1/2 opacity-80"
@@ -43,8 +46,8 @@ function TapedCard({ project, ethan, index }: CardProps) {
             "polygon(3% 0, 97% 4%, 100% 30%, 96% 55%, 100% 100%, 2% 96%, 0 65%, 4% 40%)",
         }}
       />
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-        <Image src={project.image} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 85vw, 30vw" />
+      <div className="relative w-full overflow-hidden bg-gray-100">
+        <Image src={project.image} alt={project.title} width={800} height={600} className="block h-auto w-full" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw" />
       </div>
       <p className="mt-3 text-center text-gray-900 leading-none" style={{ fontFamily: handwriting, fontWeight: 700, fontSize: "clamp(1.9rem, 2.6vw, 2.4rem)" }}>
         {project.title}
@@ -69,12 +72,14 @@ function ClotheslineCard({ project, index }: CardProps) {
       <div className="absolute left-1/2 top-0 z-10 h-10 w-4 -translate-x-1/2 rounded-sm bg-[#C79A63] shadow-[1px_2px_3px_rgba(0,0,0,0.3)]">
         <div className="mx-auto mt-4 h-1.5 w-full bg-[#9C7243]" />
       </div>
+      {/* on small screens each photo gets its own bit of string */}
+      <div className="absolute -inset-x-6 top-4 h-0.5 bg-[#7a6a58] md:hidden" />
       <div
-        className="origin-top bg-white p-3 pb-5 shadow-[2px_10px_18px_rgba(0,0,0,0.2)] transition-transform duration-500 ease-out group-hover:[transform:rotate(0deg)_translateY(4px)]"
-        style={{ transform: `rotate(${swing}deg)` }}
+        className={`origin-top bg-white p-3 pb-5 shadow-[2px_10px_18px_rgba(0,0,0,0.2)] transition-transform duration-500 ease-out ${TILTED} md:group-hover:[transform:translateY(4px)]`}
+        style={tiltVar(swing)}
       >
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-          <Image src={project.image} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 85vw, 30vw" />
+        <div className="relative w-full overflow-hidden bg-gray-100">
+          <Image src={project.image} alt={project.title} width={800} height={600} className="block h-auto w-full" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw" />
         </div>
         <p className="mt-3 text-left uppercase text-gray-800 leading-tight" style={{ fontFamily: londrina, fontWeight: 900, fontSize: "clamp(1.4rem, 2.2vw, 1.9rem)" }}>
           {project.title}
@@ -92,10 +97,10 @@ function ClotheslineCard({ project, index }: CardProps) {
 function ClotheslineRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative">
-      <svg className="pointer-events-none absolute left-[-4%] top-2 h-16 w-[108%]" viewBox="0 0 1000 60" preserveAspectRatio="none">
+      <svg className="pointer-events-none absolute left-[-4%] top-2 hidden h-16 w-[108%] md:block" viewBox="0 0 1000 60" preserveAspectRatio="none">
         <path d="M0,4 Q500,56 1000,4" fill="none" stroke="#7a6a58" strokeWidth="2.5" />
       </svg>
-      <div className="relative grid grid-cols-1 gap-10 md:grid-cols-3 lg:gap-12">{children}</div>
+      <div className="relative mx-auto grid max-w-md grid-cols-1 items-start gap-12 md:max-w-none md:grid-cols-3 lg:gap-12">{children}</div>
     </div>
   );
 }
@@ -106,13 +111,14 @@ function ClotheslineRow({ children }: { children: React.ReactNode }) {
 function InstantCard({ project, ethan }: CardProps) {
   return (
     <div className="rounded-[3px] bg-[#FBFAF7] p-[6%] pb-0 shadow-[0_1px_0_rgba(0,0,0,0.05),0_12px_28px_rgba(0,0,0,0.18)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.25)]">
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#2b2622]">
+      <div className="relative w-full overflow-hidden bg-[#2b2622]">
         <Image
           src={project.image}
           alt={project.title}
-          fill
-          className="object-cover [filter:sepia(0.55)_saturate(0.7)_brightness(1.05)_contrast(0.9)] transition-[filter] duration-700 group-hover:[filter:none]"
-          sizes="(max-width: 768px) 85vw, 30vw"
+          width={800}
+          height={600}
+          className="block h-auto w-full [filter:sepia(0.55)_saturate(0.7)_brightness(1.05)_contrast(0.9)] transition-[filter] duration-700 group-hover:[filter:none]"
+          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
         />
         <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)]" />
       </div>
@@ -137,20 +143,20 @@ const NOTE_COLORS = ["#FFF59D", "#FFD1DC", "#C8F7C5", "#BDE3FF"];
 
 function CorkboardCard({ project, ethan, index }: CardProps) {
   return (
-    <div className="relative transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.02]" style={{ transform: `rotate(${tilt(index) * 0.7}deg)` }}>
+    <div className={`relative transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.02] ${TILTED}`} style={tiltVar(tilt(index) * 0.7)}>
       <div className="relative bg-white p-2.5 shadow-[2px_6px_14px_rgba(0,0,0,0.35)]">
         {/* pushpin */}
         <div
           className="absolute left-1/2 -top-2.5 z-10 h-6 w-6 -translate-x-1/2 rounded-full shadow-[1px_3px_4px_rgba(0,0,0,0.45)]"
           style={{ background: `radial-gradient(circle at 35% 30%, #ffffffaa 0 18%, ${ethan.color} 22% 100%)` }}
         />
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-          <Image src={project.image} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 85vw, 30vw" />
+        <div className="relative w-full overflow-hidden bg-gray-100">
+          <Image src={project.image} alt={project.title} width={800} height={600} className="block h-auto w-full" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw" />
         </div>
       </div>
       <div
-        className="relative -mt-6 ml-auto mr-[-4%] w-[72%] p-3 shadow-[1px_4px_8px_rgba(0,0,0,0.25)]"
-        style={{ background: NOTE_COLORS[index % NOTE_COLORS.length], transform: `rotate(${-tilt(index + 1)}deg)` }}
+        className={`relative -mt-6 ml-auto mr-2 w-[80%] p-3 shadow-[1px_4px_8px_rgba(0,0,0,0.25)] md:mr-[-4%] md:w-[72%] ${TILTED}`}
+        style={{ background: NOTE_COLORS[index % NOTE_COLORS.length], ...tiltVar(-tilt(index + 1)) }}
       >
         <p className="uppercase leading-tight text-gray-900" style={{ fontFamily: londrina, fontWeight: 900, fontSize: "clamp(1.25rem, 1.9vw, 1.6rem)" }}>
           {project.title}
@@ -177,11 +183,11 @@ const WAVE_MASK = `url("data:image/svg+xml,${encodeURIComponent(
  */
 export function CorkboardSection({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative z-20 -mt-28 md:-mt-36 [--wave-h:7rem] md:[--wave-h:9rem]">
+    <div className="relative z-20 -mt-28 overflow-x-clip md:-mt-36 [--wave-h:7rem] md:[--wave-h:9rem]">
       <div
         className="relative px-8 pt-[calc(var(--wave-h)+1rem)] pb-24 md:px-16 md:pb-32 lg:px-24"
         style={{
-          backgroundColor: "#B07A45",
+          backgroundColor: "#D4A574",
           backgroundImage:
             "radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(60,30,10,0.28) 100%), url(/cork.webp)",
           backgroundSize: "100% 100%, 1024px 1024px",
@@ -241,12 +247,16 @@ export function VariantGallery({
   }
 
   const Card = variant === "taped" ? TapedCard : variant === "instant" ? InstantCard : CorkboardCard;
-  const gap = variant === "instant" ? "gap-x-10 gap-y-12" : "gap-x-12 gap-y-16";
+  const gap = variant === "instant" ? "gap-10" : "gap-12";
+  // Vertical spacing between cards in a column (extra room for tape/pins and overlapping notes)
+  const rowGap = variant === "instant" ? "pb-12" : "pb-16 pt-4";
 
   return (
-    <div className={`mx-auto grid max-w-[1200px] grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${gap} pt-4`}>
+    <div className={`mx-auto max-w-md columns-1 sm:max-w-[1200px] sm:columns-2 lg:columns-3 ${gap} pt-4`}>
       {projects.map((p, i) => (
-        <div key={p.slug}>{renderLink(p, <Card project={p} ethan={ethan} index={i} />)}</div>
+        <div key={p.slug} className={`break-inside-avoid ${rowGap}`}>
+          {renderLink(p, <Card project={p} ethan={ethan} index={i} />)}
+        </div>
       ))}
     </div>
   );
