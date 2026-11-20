@@ -130,9 +130,14 @@ const GALLERY_BG = "#EDE8DF";
 
 export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
   const param = useSearchParams().get("polaroid");
-  const variant = POLAROID_VARIANTS.includes(param as PolaroidVariant)
-    ? (param as PolaroidVariant)
-    : null;
+  // Corkboard is the default for every character; ?polaroid=original shows the
+  // previous masonry gallery, and the other variants can still be previewed by name.
+  const variant: PolaroidVariant | null =
+    param === "original"
+      ? null
+      : POLAROID_VARIANTS.includes(param as PolaroidVariant)
+        ? (param as PolaroidVariant)
+        : "corkboard";
   if (variant === "corkboard") {
     return (
       <CorkboardSection>
