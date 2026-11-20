@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Ethan, Project } from "@/app/page";
 
 /**
@@ -139,9 +140,71 @@ function InstantCard({ project, ethan }: CardProps) {
 /* ------------------------------------------------------------------ */
 /* 4. Corkboard — pinned photos with sticky-note captions              */
 /* ------------------------------------------------------------------ */
-const NOTE_COLORS = ["#FFF59D", "#FFD1DC", "#C8F7C5", "#BDE3FF"];
+const NOTE_COLORS = ["#FFF59D", "#FFD1DC", "#C8F7C5", "#BDE3FF", "#FFD8A8", "#E5D4FF"];
 
-function CorkboardCard({ project, ethan, index }: CardProps) {
+/** Stable pseudo-random index from a string (same on server and client). */
+function hash(str: string) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+/** Initial (server-rendered) colours: hash-based, never repeating the previous card. */
+function initialNoteColors(projects: Project[]) {
+  const out: number[] = [];
+  projects.forEach((p, i) => {
+    let c = hash(p.slug) % NOTE_COLORS.length;
+    if (i > 0 && c === out[i - 1]) c = (c + 1) % NOTE_COLORS.length;
+    out.push(c);
+  });
+  return out;
+}
+
+/**
+ * Random-looking note colours that never match a card beside it in the same row
+ * or directly above it. The masonry layout depends on photo heights and screen
+ * width, so this measures where cards actually landed and re-runs on resize.
+ */
+function useNoteColors(projects: Project[], container: React.RefObject<HTMLDivElement | null>, enabled: boolean) {
+  const [colors, setColors] = useState(() => initialNoteColors(projects));
+
+  useLayoutEffect(() => {
+    const el = container.current;
+    if (!enabled || !el) return;
+    const assign = () => {
+      const cards = [...el.children].map((c) => (c as HTMLElement).getBoundingClientRect());
+      if (cards.length !== projects.length) return;
+      const order = cards.map((_, i) => i).sort((a, b) => cards[a].top - cards[b].top || cards[a].left - cards[b].left);
+      const out: number[] = new Array(projects.length).fill(-1);
+      for (const i of order) {
+        const r = cards[i];
+        const taken = new Set<number>();
+        cards.forEach((o, j) => {
+          if (j === i || out[j] < 0) return;
+          const sameRow = Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 0.25 * Math.min(r.height, o.height);
+          const sameCol = Math.abs(o.left - r.left) < 10;
+          if (sameRow || sameCol) taken.add(out[j]);
+        });
+        const start = hash(projects[i].slug) % NOTE_COLORS.length;
+        let pick = start;
+        for (let k = 0; k < NOTE_COLORS.length; k++) {
+          const c = (start + k) % NOTE_COLORS.length;
+          if (!taken.has(c)) { pick = c; break; }
+        }
+        out[i] = pick;
+      }
+      setColors((prev) => (prev.join() === out.join() ? prev : out));
+    };
+    assign();
+    const ro = new ResizeObserver(assign);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [projects, container, enabled]);
+
+  return colors.map((c) => NOTE_COLORS[c]);
+}
+
+function CorkboardCard({ project, ethan, index, noteColor }: CardProps & { noteColor?: string }) {
   return (
     <div className={`relative transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:scale-[1.02] ${TILTED}`} style={tiltVar(tilt(index) * 0.7)}>
       <div className="relative bg-white p-2.5 shadow-[2px_6px_14px_rgba(0,0,0,0.35)]">
@@ -156,7 +219,7 @@ function CorkboardCard({ project, ethan, index }: CardProps) {
       </div>
       <div
         className={`relative -mt-6 ml-auto mr-2 w-[80%] p-3 shadow-[1px_4px_8px_rgba(0,0,0,0.25)] md:mr-[-4%] md:w-[72%] ${TILTED}`}
-        style={{ background: NOTE_COLORS[index % NOTE_COLORS.length], ...tiltVar(-tilt(index + 1)) }}
+        style={{ background: noteColor ?? NOTE_COLORS[index % NOTE_COLORS.length], ...tiltVar(-tilt(index + 1)) }}
       >
         <p className="uppercase leading-tight text-gray-900" style={{ fontFamily: londrina, fontWeight: 900, fontSize: "clamp(1.25rem, 1.9vw, 1.6rem)" }}>
           {project.title}
@@ -187,9 +250,9 @@ export function CorkboardSection({ children }: { children: React.ReactNode }) {
       <div
         className="relative px-8 pt-[calc(var(--wave-h)+1rem)] pb-24 md:px-16 md:pb-32 lg:px-24"
         style={{
-          backgroundColor: "#D4A574",
+          backgroundColor: "#C69D78",
           backgroundImage:
-            "radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(60,30,10,0.28) 100%), url(/cork.webp)",
+            "radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(50,38,28,0.25) 100%), url(/cork.webp)",
           backgroundSize: "100% 100%, 1024px 1024px",
           WebkitMaskImage: `${WAVE_MASK}, linear-gradient(#000, #000)`,
           maskImage: `${WAVE_MASK}, linear-gradient(#000, #000)`,
@@ -229,6 +292,8 @@ export function VariantGallery({
   renderLink: (project: Project, children: React.ReactNode) => React.ReactNode;
 }) {
   const projects = ethan.projects;
+  const gridRef = useRef<HTMLDivElement>(null);
+  const colors = useNoteColors(projects, gridRef, variant === "corkboard");
 
   if (variant === "clothesline") {
     const rows: Project[][] = [];
@@ -252,10 +317,17 @@ export function VariantGallery({
   const rowGap = variant === "instant" ? "pb-12" : "pb-16 pt-4";
 
   return (
-    <div className={`mx-auto max-w-md columns-1 sm:max-w-[1200px] sm:columns-2 lg:columns-3 ${gap} pt-4`}>
+    <div ref={gridRef} className={`mx-auto max-w-md columns-1 sm:max-w-[1200px] sm:columns-2 lg:columns-3 ${gap} pt-4`}>
       {projects.map((p, i) => (
         <div key={p.slug} className={`break-inside-avoid ${rowGap}`}>
-          {renderLink(p, <Card project={p} ethan={ethan} index={i} />)}
+          {renderLink(
+            p,
+            variant === "corkboard" ? (
+              <CorkboardCard project={p} ethan={ethan} index={i} noteColor={colors[i]} />
+            ) : (
+              <Card project={p} ethan={ethan} index={i} />
+            )
+          )}
         </div>
       ))}
     </div>
