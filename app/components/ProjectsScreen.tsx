@@ -7,8 +7,7 @@ import { useSearchParams } from "next/navigation";
 import type { Ethan, Project } from "@/app/page";
 import {
   POLAROID_VARIANTS,
-  VARIANT_SECTION_BG,
-  VARIANT_WAVE_FILL,
+  CorkboardSection,
   VariantGallery,
   type PolaroidVariant,
 } from "./PolaroidVariants";
@@ -134,11 +133,21 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
   const variant = POLAROID_VARIANTS.includes(param as PolaroidVariant)
     ? (param as PolaroidVariant)
     : null;
-  const waveFill = (variant && VARIANT_WAVE_FILL[variant]) || GALLERY_BG;
-  const sectionStyle = {
-    backgroundColor: GALLERY_BG,
-    ...(variant ? VARIANT_SECTION_BG[variant] : {}),
-  };
+  if (variant === "corkboard") {
+    return (
+      <CorkboardSection>
+        <VariantGallery
+          variant={variant}
+          ethan={ethan}
+          renderLink={(project, children) => (
+            <ProjectLink project={project} ethan={ethan}>
+              {children}
+            </ProjectLink>
+          )}
+        />
+      </CorkboardSection>
+    );
+  }
 
   return (
     <div className="relative">
@@ -152,7 +161,7 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
         >
           <path
             d="M0,80 C240,160 480,0 720,80 C960,160 1200,0 1440,80 L1440,180 L0,180 Z"
-            fill={waveFill}
+            fill={GALLERY_BG}
           />
         </svg>
       </div>
@@ -160,7 +169,7 @@ export default function ProjectsScreen({ ethan }: { ethan: Ethan }) {
       {/* Gallery section */}
       <section
         className="relative z-20 px-8 md:px-16 lg:px-24 pt-8 pb-24 md:pt-12 md:pb-32"
-        style={sectionStyle}
+        style={{ backgroundColor: GALLERY_BG }}
       >
         {variant ? (
           <VariantGallery

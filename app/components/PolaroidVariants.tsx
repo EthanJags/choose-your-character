@@ -156,7 +156,7 @@ function CorkboardCard({ project, ethan, index }: CardProps) {
           {project.title}
         </p>
         {project.subtitle && (
-          <p className="mt-0.5 text-gray-700 leading-snug" style={{ fontFamily: handwriting, fontSize: "1.1rem" }}>
+          <p className="mt-1 text-gray-900 leading-snug" style={{ fontFamily: "var(--font-figma-hand), sans-serif", fontSize: "1.15rem" }}>
             {project.subtitle}
           </p>
         )}
@@ -165,21 +165,53 @@ function CorkboardCard({ project, ethan, index }: CardProps) {
   );
 }
 
-const CORK_BG = {
-  backgroundColor: "#C49A6C",
-  backgroundImage:
-    "radial-gradient(rgba(90,55,25,0.35) 1px, transparent 1.5px), radial-gradient(rgba(255,235,200,0.25) 1px, transparent 1.5px)",
-  backgroundSize: "7px 7px, 11px 11px",
-  backgroundPosition: "0 0, 3px 5px",
-};
+const WAVE_PATH = "M0,80 C240,160 480,0 720,80 C960,160 1200,0 1440,80";
+const WAVE_MASK = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 180' preserveAspectRatio='none'><path d='${WAVE_PATH} L1440,180 L0,180 Z'/></svg>`
+)}")`;
 
-export const VARIANT_SECTION_BG: Partial<Record<PolaroidVariant, React.CSSProperties>> = {
-  corkboard: CORK_BG,
-};
-
-export const VARIANT_WAVE_FILL: Partial<Record<PolaroidVariant, string>> = {
-  corkboard: "#C49A6C",
-};
+/**
+ * Corkboard section: the cork texture itself forms the wavy top edge (masked),
+ * with a wooden frame rim drawn along the curve, so there's no flat-colour band
+ * between the title screen and the board.
+ */
+export function CorkboardSection({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative z-20 -mt-28 md:-mt-36 [--wave-h:7rem] md:[--wave-h:9rem]">
+      <div
+        className="relative px-8 pt-[calc(var(--wave-h)+1rem)] pb-24 md:px-16 md:pb-32 lg:px-24"
+        style={{
+          backgroundColor: "#B07A45",
+          backgroundImage:
+            "radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(60,30,10,0.28) 100%), url(/cork.webp)",
+          backgroundSize: "100% 100%, 1024px 1024px",
+          WebkitMaskImage: `${WAVE_MASK}, linear-gradient(#000, #000)`,
+          maskImage: `${WAVE_MASK}, linear-gradient(#000, #000)`,
+          WebkitMaskSize: "100% var(--wave-h), 100% calc(100% - var(--wave-h) + 1px)",
+          maskSize: "100% var(--wave-h), 100% calc(100% - var(--wave-h) + 1px)",
+          WebkitMaskPosition: "top, bottom",
+          maskPosition: "top, bottom",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+        }}
+      >
+        {children}
+      </div>
+      {/* Wooden frame rim following the wave */}
+      <svg
+        className="pointer-events-none absolute inset-x-0 top-0 block h-[var(--wave-h)] w-full overflow-visible"
+        viewBox="0 0 1440 180"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <path d={WAVE_PATH} transform="translate(0 9)" fill="none" stroke="rgba(40,20,5,0.28)" strokeWidth="10" vectorEffect="non-scaling-stroke" />
+        <path d={WAVE_PATH} fill="none" stroke="#6E4523" strokeWidth="16" vectorEffect="non-scaling-stroke" />
+        <path d={WAVE_PATH} fill="none" stroke="#9A6535" strokeWidth="10" vectorEffect="non-scaling-stroke" />
+        <path d={WAVE_PATH} transform="translate(0 -3)" fill="none" stroke="#C08A55" strokeWidth="2" vectorEffect="non-scaling-stroke" opacity="0.8" />
+      </svg>
+    </div>
+  );
+}
 
 export function VariantGallery({
   variant,
