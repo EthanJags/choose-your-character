@@ -42,6 +42,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ethanjagoda.me"),
   title: "Ethan's Portfolio",
   description: "Choose your character and explore Ethan's portfolio",
   icons: {
@@ -53,20 +54,20 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Ethan's Portfolio",
-      images: [
-        {
-          url: "/openGraph.png",
-          width: 1200,
-          height: 630,
-          alt: "Ethan's Portfolio - Choose Your Character",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Ethan's Portfolio",
-      description: "Choose your character and explore Ethan's portfolio",
-      images: ["/openGraph.png"],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ethan's Portfolio - Choose Your Character",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ethan's Portfolio",
+    description: "Choose your character and explore Ethan's portfolio",
+    images: ["/og-image.png"],
   },
 };
 
