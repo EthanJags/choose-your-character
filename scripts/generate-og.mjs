@@ -3,6 +3,7 @@
  * "Select Your Ethan" staggered-sticker style:
  *
  *   public/og/home.jpg                          – homepage card
+ *   public/og/home.mp4                          – homepage og:video (spotlight loop, needs ffmpeg)
  *   public/og/<characterSlug>/<projectSlug>.jpg – one card per project page
  *
  * Run after adding or changing a character or project:
@@ -16,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
+import { execFileSync } from "node:child_process";
 import { characters } from "../app/data/content.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -71,15 +73,71 @@ function bust(c, x, y, scale, rotate) {
   <div class="banner"><img src="${asset(c.banner)}"><span>${esc(label(c))}</span></div></div>`;
 }
 
-function homeHtml() {
-  const slots = [
-    [60, 190, -4],
-    [335, 245, 3],
-    [610, 190, -3],
-    [885, 245, 4],
-  ];
-  return page(`<h1 style="top:36px;font-size:96px">Select Your Ethan</h1>
-${characters.slice(0, 4).map((c, i) => bust(c, slots[i][0], slots[i][1], 1.15, slots[i][2])).join("")}`);
+const HOME_SLOTS = [
+  [60, 190, -4],
+  [335, 245, 3],
+  [610, 190, -3],
+  [885, 245, 4],
+];
+
+// Spotlight loop: each Ethan in turn grows and lifts while the others dim.
+// Keyframes start and end on the same state and the four phases are offset
+// by exactly a quarter period, so the video loops with no visible seam.
+const LOOP_MS = 5000;
+const FPS = 30;
+const spotlightCss = `
+.spot{position:absolute;z-index:3;width:${230 * 1.15}px;height:${250 * 1.15}px;
+  transform-origin:50% 60%;animation:spot ${LOOP_MS}ms infinite ease-in-out}
+.spot .bust{left:0;top:0}
+@keyframes spot{
+  0%,22%{transform:scale(1.13) translateY(-8px);filter:none}
+  28%,94%{transform:scale(.97);filter:brightness(.72) saturate(.7)}
+  100%{transform:scale(1.13) translateY(-8px);filter:none}}`;
+
+function homeHtml({ animated = false } = {}) {
+  const items = characters.slice(0, 4).map((c, i) => {
+    const [x, y, r] = HOME_SLOTS[i];
+    if (!animated) return bust(c, x, y, 1.15, r);
+    const delay = -LOOP_MS + (i * LOOP_MS) / 4;
+    return `<div class="spot" style="left:${x}px;top:${y}px;animation-delay:${delay}ms">${bust(c, 0, 0, 1.15, r)}</div>`;
+  });
+  return page(`${animated ? `<style>${spotlightCss}</style>` : ""}
+<h1 style="top:36px;font-size:96px">Select Your Ethan</h1>
+${items.join("")}`);
+}
+
+async function renderHomeVideo(tab, tmp) {
+  const framesDir = path.join(OUT, ".frames");
+  fs.rmSync(framesDir, { recursive: true, force: true });
+  fs.mkdirSync(framesDir);
+  fs.writeFileSync(tmp, homeHtml({ animated: true }));
+  await tab.goto(pathToFileURL(tmp).href, { waitUntil: "networkidle" });
+  await tab.evaluate(() => document.fonts.ready);
+  // Step the animation clock by hand so every frame is exact. Frame N would
+  // equal frame 0, so stop one short of the full period.
+  const frames = (LOOP_MS / 1000) * FPS;
+  for (let f = 0; f < frames; f++) {
+    await tab.evaluate((t) => {
+      for (const a of document.getAnimations()) {
+        a.pause();
+        a.currentTime = t;
+      }
+    }, (f * 1000) / FPS);
+    await tab.screenshot({
+      path: path.join(framesDir, `${String(f).padStart(4, "0")}.png`),
+    });
+  }
+  const file = path.join(OUT, "home.mp4");
+  execFileSync("ffmpeg", [
+    "-y", "-loglevel", "error",
+    "-framerate", String(FPS),
+    "-i", path.join(framesDir, "%04d.png"),
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "22",
+    "-movflags", "+faststart", "-an",
+    file,
+  ]);
+  fs.rmSync(framesDir, { recursive: true });
+  console.log("wrote", path.relative(ROOT, file));
 }
 
 function projectHtml(c, p) {
@@ -117,6 +175,12 @@ async function main() {
     await tab.evaluate(() => document.fonts.ready);
     await tab.screenshot({ path: file, type: "jpeg", quality: 88 });
     console.log("wrote", path.relative(ROOT, file));
+  }
+  try {
+    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" });
+    await renderHomeVideo(tab, tmp);
+  } catch (err) {
+    console.warn("skipped home.mp4 (needs ffmpeg):", err.message);
   }
   fs.rmSync(tmp);
   await browser.close();
