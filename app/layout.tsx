@@ -59,7 +59,7 @@ export const metadata: Metadata = {
         url: "/og-card.png",
         width: 1200,
         height: 630,
-        alt: "Select Your Ethan: the Adventurer, the Engineer, the Artist and the Misc Dude",
+        alt: "Select Your Ethan: The Adventurer",
       },
     ],
   },
