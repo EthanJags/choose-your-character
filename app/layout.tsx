@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: "Ethan's Portfolio",
     images: [
       {
-        url: "/og-card.png",
+        url: "/og/home.jpg",
         width: 1200,
         height: 630,
         alt: "Select Your Ethan: the Adventurer, the Engineer, the Artist and the Misc Dude",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ethan's Portfolio",
     description: "Choose your character and explore Ethan's portfolio",
-    images: ["/og-card.png"],
+    images: ["/og/home.jpg"],
   },
 };
 

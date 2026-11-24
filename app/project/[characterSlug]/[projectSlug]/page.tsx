@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import fs from "fs";
@@ -62,6 +63,49 @@ export async function generateStaticParams() {
       projectSlug: proj.slug,
     }))
   );
+}
+
+type ProjectParams = { characterSlug: string; projectSlug: string };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<ProjectParams>;
+}): Promise<Metadata> {
+  const { characterSlug, projectSlug } = await params;
+  const character = characters.find((c) => c.slug === characterSlug);
+  const project = character?.projects.find((p) => p.slug === projectSlug);
+  if (!character || !project) return {};
+
+  const title = `${project.title} | Ethan's Portfolio`;
+  const description = project.tagline ?? project.subtitle;
+  // Pre-rendered 1200x630 cards; regenerate with `npm run og`.
+  const image = {
+    url: `/og/${character.slug}/${project.slug}.jpg`,
+    width: 1200,
+    height: 630,
+    alt: project.title,
+  };
+  const url = `/project/${character.slug}/${project.slug}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url,
+      siteName: "Ethan's Portfolio",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image.url],
+    },
+  };
 }
 
 export default async function ProjectPage({
