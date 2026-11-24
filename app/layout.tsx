@@ -41,8 +41,10 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
+const SITE_URL = "https://ethanjagoda.me";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ethanjagoda.me"),
+  metadataBase: new URL(SITE_URL),
   title: "Ethan's Portfolio",
   description: "Choose your character and explore Ethan's portfolio",
   icons: {
@@ -64,9 +66,11 @@ export const metadata: Metadata = {
     ],
     // Looping spotlight video (regenerate with `npm run og`). Plays where
     // og:video is supported (Discord, Telegram, iMessage); X shows the image.
+    // Absolute URL: Next does not resolve video URLs against metadataBase.
     videos: [
       {
-        url: "/og/home.mp4",
+        url: `${SITE_URL}/og/home.mp4`,
+        secureUrl: `${SITE_URL}/og/home.mp4`,
         width: 1200,
         height: 630,
         type: "video/mp4",
