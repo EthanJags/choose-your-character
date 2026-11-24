@@ -147,7 +147,7 @@ function HomeContent() {
       />
       {selectedEthan && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto overscroll-none"
+          className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden overscroll-none"
           style={{
             backgroundColor: selectedEthan.color,
             // Open and close are both transitions (not a keyframe animation, which
