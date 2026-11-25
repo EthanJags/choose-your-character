@@ -6,6 +6,7 @@ import SoundToggle from "./components/SoundToggle";
 import ClickForSoundTooltip from "./components/ClickForSoundTooltip";
 import Chatbot from "./components/Chatbot";
 import { PostHogProvider } from "./providers";
+import { OG_VERSION } from "./lib/og";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "Ethan's Portfolio",
     images: [
       {
-        url: "/og/home.jpg",
+        url: `/og/home.jpg?v=${OG_VERSION}`,
         width: 1200,
         height: 630,
         alt: "Select Your Ethan: the Adventurer, the Engineer, the Artist and the Misc Dude",
@@ -69,8 +70,8 @@ export const metadata: Metadata = {
     // Absolute URL: Next does not resolve video URLs against metadataBase.
     videos: [
       {
-        url: `${SITE_URL}/og/home.mp4`,
-        secureUrl: `${SITE_URL}/og/home.mp4`,
+        url: `${SITE_URL}/og/home.mp4?v=${OG_VERSION}`,
+        secureUrl: `${SITE_URL}/og/home.mp4?v=${OG_VERSION}`,
         width: 1200,
         height: 630,
         type: "video/mp4",
@@ -81,7 +82,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ethan's Portfolio",
     description: "Choose your character and explore Ethan's portfolio",
-    images: ["/og/home.jpg"],
+    images: [`/og/home.jpg?v=${OG_VERSION}`],
   },
 };
 

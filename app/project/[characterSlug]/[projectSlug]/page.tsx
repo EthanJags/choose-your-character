@@ -6,6 +6,7 @@ import path from "path";
 import { characters } from "@/app/data/content";
 import AutoFitText from "@/app/components/AutoFitText";
 import ProjectExternalLinks from "./ProjectExternalLinks";
+import { OG_VERSION } from "@/app/lib/og";
 
 const IMAGE_EXTENSIONS = [".jpeg", ".jpg", ".png", ".webp", ".JPG"];
 
@@ -81,7 +82,7 @@ export async function generateMetadata({
   const description = project.tagline ?? project.subtitle;
   // Pre-rendered 1200x630 cards; regenerate with `npm run og`.
   const image = {
-    url: `/og/${character.slug}/${project.slug}.jpg`,
+    url: `/og/${character.slug}/${project.slug}.jpg?v=${OG_VERSION}`,
     width: 1200,
     height: 630,
     alt: project.title,
