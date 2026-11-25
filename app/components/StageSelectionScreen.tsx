@@ -362,8 +362,10 @@ export default function StageSelectionScreen({
         <>
           {/* Select your Ethan */}
           {/* Font also scales with height and the top never goes above the tab bar,
-              so the heading doesn't cover the tabs on short/landscape screens */}
-          <h1 className="text-[min(3.75rem,15vw,12vh)] md:text-[min(6rem,12vw,12vh)] leading-none text-white text-center uppercase absolute z-20 top-[max(4.75rem,calc(16vh-0.5lh))] md:top-[max(5rem,calc(20vh-0.5lh))] left-0 right-0 mx-5 lg:mx-20 pointer-events-none">
+              so the heading doesn't cover the tabs on short/landscape screens.
+              On short portrait phones (in-app browsers) it drops to one line so
+              "Ethan" doesn't run into the circle. */}
+          <h1 className="text-[min(3.75rem,15vw,12vh)] short-phone:text-[min(11vw,12vh)] short-phone:whitespace-nowrap md:text-[min(6rem,12vw,12vh)] leading-none text-white text-center uppercase absolute z-20 top-[max(4.75rem,calc(16vh-0.5lh))] md:top-[max(5rem,calc(20vh-0.5lh))] left-0 right-0 mx-5 lg:mx-20 pointer-events-none">
             {uiStrings.selectCharacter}
           </h1>
 

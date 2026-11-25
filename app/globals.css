@@ -3,6 +3,10 @@
 /* Landscape phones: too short for the stacked mobile layout */
 @custom-variant landscape-phone (@media (orientation: landscape) and (max-height: 500px));
 
+/* Short portrait phones, e.g. X's and Instagram's in-app browser sheet
+   (~390x510): too short for the two-line "Select your Ethan" heading */
+@custom-variant short-phone (@media (max-width: 767px) and (max-height: 700px));
+
 @font-face {
   font-family: "Figma Hand";
   src:
