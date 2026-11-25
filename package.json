@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "og": "node scripts/generate-og.mjs",
     "start": "next start",
     "lint": "eslint"
   },

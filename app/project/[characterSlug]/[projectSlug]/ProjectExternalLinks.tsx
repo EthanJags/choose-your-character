@@ -8,6 +8,8 @@ type ProjectExternalLinksProps = {
   characterName: string;
   characterSlug: string;
   secondaryColor: string;
+  /** Page background, used as the text color on the filled primary button */
+  backgroundColor: string;
   demoUrl?: string;
   demoLabel?: string;
   devpostUrl?: string;
@@ -20,22 +22,26 @@ export default function ProjectExternalLinks({
   characterName,
   characterSlug,
   secondaryColor,
+  backgroundColor,
   demoUrl,
   demoLabel,
   devpostUrl,
   devpostLabel,
 }: ProjectExternalLinksProps) {
   return (
-    <div className="flex flex-wrap gap-4 mb-8">
+    <div className="flex flex-wrap justify-center md:justify-start gap-3">
       {demoUrl && demoLabel && (
         <a
           href={demoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-2 rounded-full px-6 py-3 uppercase text-lg md:text-xl tracking-wide transition-transform hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4"
           style={{
-            color: secondaryColor,
+            backgroundColor: secondaryColor,
+            color: backgroundColor,
+            outlineColor: secondaryColor,
             fontFamily: "var(--font-londrina-solid), sans-serif",
+            fontWeight: 900,
           }}
           onClick={() => {
             posthog.capture("project_external_link_clicked", {
@@ -49,6 +55,7 @@ export default function ProjectExternalLinks({
           }}
         >
           {demoLabel}
+          <span aria-hidden>→</span>
         </a>
       )}
       {devpostUrl && (
@@ -56,10 +63,13 @@ export default function ProjectExternalLinks({
           href={devpostUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="uppercase font-semibold text-sm md:text-base hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-2 rounded-full px-6 py-3 uppercase text-lg md:text-xl tracking-wide transition-transform hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4"
           style={{
+            border: `2px solid ${secondaryColor}`,
             color: secondaryColor,
+            outlineColor: secondaryColor,
             fontFamily: "var(--font-londrina-solid), sans-serif",
+            fontWeight: 900,
           }}
           onClick={() => {
             posthog.capture("project_external_link_clicked", {

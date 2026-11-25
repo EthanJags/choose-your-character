@@ -6,6 +6,7 @@ import SoundToggle from "./components/SoundToggle";
 import ClickForSoundTooltip from "./components/ClickForSoundTooltip";
 import Chatbot from "./components/Chatbot";
 import { PostHogProvider } from "./providers";
+import { OG_VERSION } from "./lib/og";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +42,10 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
+const SITE_URL = "https://ethanjagoda.me";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Ethan's Portfolio",
   description: "Choose your character and explore Ethan's portfolio",
   icons: {
@@ -53,20 +57,32 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Ethan's Portfolio",
-      images: [
-        {
-          url: "/openGraph.png",
-          width: 1200,
-          height: 630,
-          alt: "Ethan's Portfolio - Choose Your Character",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Ethan's Portfolio",
-      description: "Choose your character and explore Ethan's portfolio",
-      images: ["/openGraph.png"],
+    images: [
+      {
+        url: `/og/home.jpg?v=${OG_VERSION}`,
+        width: 1200,
+        height: 630,
+        alt: "Select Your Ethan: the Adventurer, the Engineer, the Artist and the Misc Dude",
+      },
+    ],
+    // Looping spotlight video (regenerate with `npm run og`). Plays where
+    // og:video is supported (Discord, Telegram, iMessage); X shows the image.
+    // Absolute URL: Next does not resolve video URLs against metadataBase.
+    videos: [
+      {
+        url: `${SITE_URL}/og/home.mp4?v=${OG_VERSION}`,
+        secureUrl: `${SITE_URL}/og/home.mp4?v=${OG_VERSION}`,
+        width: 1200,
+        height: 630,
+        type: "video/mp4",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ethan's Portfolio",
+    description: "Choose your character and explore Ethan's portfolio",
+    images: [`/og/home.jpg?v=${OG_VERSION}`],
   },
 };
 
