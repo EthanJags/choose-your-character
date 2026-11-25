@@ -1,14 +1,16 @@
 /**
- * Generates the Open Graph / Twitter link previews in the "Select Your Ethan"
- * character-select style. Every image is exactly 1200x630 (1.91:1, the ratio
+ * Generates the Open Graph / Twitter link previews. The homepage uses a
+ * "Select Your Ethan" character-select design; project pages keep the original
+ * staggered-sticker design. Every image is exactly 1200x630 (1.91:1, the ratio
  * X, LinkedIn, Facebook, Discord and iMessage use for large link cards):
  *
  *   public/og/home.jpg                          – homepage card
  *   public/og/home.mp4                          – homepage og:video: the 1P cursor
  *                                                 moves tile to tile (needs ffmpeg)
- *   public/og/<characterSlug>/<projectSlug>.jpg – one card per project page, with
- *                                                 that project's Ethan selected and
- *                                                 its thumbnail as the "stage"
+ *   public/og/<characterSlug>/<projectSlug>.jpg – one card per project page in the
+ *                                                 original staggered-sticker style:
+ *                                                 title, the character cutout, and the
+ *                                                 project photo (object-fit: cover)
  *
  * Run after adding or changing a character or project:
  *
@@ -73,16 +75,13 @@ body{width:${W}px;height:${H}px;overflow:hidden;position:relative;font-family:"L
 .p1 .fig{position:absolute;left:390px;height:500px;transform:translateX(-50%)}
 .p1 .tag{position:absolute;left:0;top:0;padding:2px 16px 0 14px;background:#0e0e0e;color:#f4f1ea;font-size:34px;font-style:italic}
 .p1 .ready{position:absolute;left:84px;top:8px;color:#fff;font-size:28px;letter-spacing:1px;font-style:italic;text-transform:uppercase}
-.p1 .name{position:absolute;left:-14px;top:62px;padding:0 28px 0 36px;background:#f4f1ea;transform:skewX(-14deg);border-bottom:6px solid var(--c)}
+.p1 .name{position:absolute;left:-14px;top:62px;padding:0 28px 0 36px;background:#f4f1ea;transform:skewX(-14deg)}
 .p1 .name span{display:block;transform:skewX(14deg);color:#111;font-size:42px;line-height:56px;text-transform:uppercase;white-space:nowrap}
 .slot{position:absolute;top:${PANEL_TOP}px;width:176px;height:252px;border:4px solid #0e0e0e;overflow:hidden;
   background:linear-gradient(160deg,color-mix(in srgb,var(--p) 34%,#1b1a1e) 0%,#151418 100%)}
 .slot .tag{position:absolute;left:0;top:0;padding:2px 14px 0 12px;background:var(--p);color:#111;font-size:30px;font-style:italic}
 .slot .big{position:absolute;right:10px;bottom:30px;color:var(--p);opacity:.22;font-size:190px;line-height:1;font-style:italic}
 .slot .ps{position:absolute;left:0;right:0;bottom:14px;text-align:center;color:rgba(244,241,234,.8);font-size:24px;text-transform:uppercase;letter-spacing:1px}
-.stage{position:absolute;left:600px;top:${PANEL_TOP}px;width:552px;height:252px;border:4px solid #0e0e0e;overflow:hidden;background:#111}
-.stage img{display:block;width:100%;height:100%;object-fit:cover}
-.stage .tag{position:absolute;left:0;top:0;padding:2px 14px 0 12px;background:#0e0e0e;color:#f4f1ea;font-size:30px;font-style:italic;text-transform:uppercase}
 `;
 
 const page = (body, script = "") => `<!doctype html><html><head><meta charset="utf-8">
@@ -136,11 +135,55 @@ function homeHtml() {
 ${tiles(0)}${pointer(0)}${p1Panel(characters[0])}${emptySlots}`);
 }
 
+
+
+// ---- Project cards: the original staggered-sticker design (unchanged). ----
+const projectCss = `
+*{margin:0;box-sizing:border-box}
+body{width:${W}px;height:${H}px;overflow:hidden;position:relative;
+  background:#7a7a7a url("${asset("background.png")}") center/cover;
+  font-family:"Londrina Solid",sans-serif}
+body::before{content:"";position:absolute;inset:0;background:#8c8c8c;mix-blend-mode:multiply;z-index:0}
+h1{position:absolute;left:60px;right:60px;text-align:center;color:#fff;line-height:1;
+  text-transform:uppercase;white-space:nowrap;z-index:5;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+.mtn{position:absolute;left:50%;bottom:-300px;width:1300px;transform:translateX(-50%);z-index:1}
+.bust{position:absolute;width:230px;height:250px;transform-origin:top left;z-index:3}
+.clip{position:absolute;inset:0 0 18px 0;overflow:hidden}
+.halo{position:absolute;border-radius:50%;width:180px;height:180px;left:25px;top:12px}
+.clip img{position:absolute;height:320px;left:50%;transform:translateX(-50%);top:10px}
+.banner{position:absolute;left:15px;top:190px;width:200px;height:52px}
+.banner img{position:absolute;inset:0;width:100%;height:100%}
+.banner span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  text-transform:uppercase;color:#000;padding-top:2px;font-size:23px;white-space:nowrap}
+.shot{position:absolute;background:#fff;padding:12px;z-index:3;
+  box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.shot img{display:block;width:100%;height:100%;object-fit:cover}
+`;
+
+const projectPage = (body) => `<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@900&display=block" rel="stylesheet">
+<style>${projectCss}</style></head><body>
+<img class="mtn" src="${asset("mountain.png")}">
+${body}
+<script>
+  // Shrink the title until it fits on one line.
+  for (const h of document.querySelectorAll("h1")) {
+    let s = parseFloat(getComputedStyle(h).fontSize);
+    while (h.scrollWidth > h.clientWidth && s > 40) h.style.fontSize = (s -= 2) + "px";
+  }
+</script></body></html>`;
+
+function bust(c, x, y, scale, rotate) {
+  return `<div class="bust" style="left:${x}px;top:${y}px;transform:scale(${scale}) rotate(${rotate}deg)">
+  <div class="clip"><div class="halo" style="background:${c.color}"></div><img src="${asset(c.image)}"></div>
+  <div class="banner"><img src="${asset(c.banner)}"><span>${esc(label(c))}</span></div></div>`;
+}
+
 function projectHtml(c, p) {
-  const i = Math.max(0, characters.slice(0, 4).findIndex((x) => x.slug === c.slug));
-  return page(`<div class="title"><span>${esc(p.title)}</span></div><div class="site">ethanjagoda.me</div>
-${tiles(i)}${pointer(i)}${p1Panel(c)}
-<div class="stage"><img src="${asset(p.image)}"><div class="tag">Stage</div></div>`);
+  return projectPage(`<h1 style="top:36px;font-size:96px">${esc(p.title)}</h1>
+${bust(c, 110, 205, 1.45, 0)}
+<div class="shot" style="left:520px;top:190px;width:600px;height:360px">
+  <img src="${asset(p.image)}"></div>`);
 }
 
 // Homepage video: the 1P cursor visits each tile in turn. Each Ethan is held
