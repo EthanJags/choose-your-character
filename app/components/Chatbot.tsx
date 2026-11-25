@@ -128,6 +128,11 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
+  // Hidden until we know the active character's colours, so the server-rendered
+  // default (orange) never flashes before switching. `animate` stays off for that
+  // first colour so it doesn't fade in from orange either.
+  const [themeReady, setThemeReady] = useState(false);
+  const [animate, setAnimate] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -135,16 +140,37 @@ export default function Chatbot() {
     const initial = (window as unknown as {
       __activeCharacter?: { color: string; secondaryColor: string; thirdColor: string } | null;
     }).__activeCharacter;
-    if (initial) setTheme(buildTheme(initial));
+    let raf = 0;
+    const reveal = () => {
+      setThemeReady(true);
+      // enable colour transitions only after the first colour has painted
+      raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => setAnimate(true))));
+    };
+    // Character already announced before we mounted (bubble is hidden meanwhile)
+    let initialRaf = 0;
+    if (initial) {
+      initialRaf = requestAnimationFrame(() => {
+        setTheme(buildTheme(initial));
+        reveal();
+      });
+    }
 
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as
         | { color: string; secondaryColor: string; thirdColor: string }
         | null;
       setTheme(buildTheme(detail));
+      reveal();
     };
     window.addEventListener("characterChange", handler);
-    return () => window.removeEventListener("characterChange", handler);
+    // Pages with no character (e.g. project pages) never announce one: show the default
+    const fallback = setTimeout(reveal, 800);
+    return () => {
+      window.removeEventListener("characterChange", handler);
+      clearTimeout(fallback);
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(initialRaf);
+    };
   }, []);
 
   useEffect(() => {
@@ -224,8 +250,10 @@ export default function Chatbot() {
         boxShadow: open ? "0 12px 32px rgba(0,0,0,0.25)" : "0 6px 16px rgba(0,0,0,0.25)",
         overflow: "hidden",
         transformOrigin: "bottom right",
-        transition:
-          "width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1), right 320ms ease, bottom 320ms ease, border-radius 320ms ease, background 240ms ease, box-shadow 240ms ease, transform 200ms ease",
+        visibility: themeReady ? "visible" : "hidden",
+        transition: animate
+          ? "width 320ms cubic-bezier(0.22, 1, 0.36, 1), height 320ms cubic-bezier(0.22, 1, 0.36, 1), right 320ms ease, bottom 320ms ease, border-radius 320ms ease, background 240ms ease, box-shadow 240ms ease, transform 200ms ease"
+          : "none",
       }}
     >
       <style>{`
