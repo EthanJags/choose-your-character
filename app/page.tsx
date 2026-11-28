@@ -172,9 +172,21 @@ function HomeContent() {
   );
 }
 
+// useSearchParams makes everything under the Suspense boundary render only in
+// the browser, so the fallback is what the server sends. It is the same
+// character selection screen the page opens on, so the HTML has real content
+// and the page looks the same before and after JavaScript loads.
+function HomeFallback() {
+  return (
+    <div className="relative overflow-hidden min-h-screen">
+      <StageSelectionScreen ethans={characters} active onSelect={() => {}} />
+    </div>
+  );
+}
+
 export default function Home() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<HomeFallback />}>
       <HomeContent />
     </Suspense>
   );
