@@ -44,10 +44,31 @@ export const viewport: Viewport = {
 
 const SITE_URL = "https://ethanjagoda.me";
 
+// Read by search engines and agents only; people never see it on the page.
+// Link previews keep their own description below.
+const AGENT_DESCRIPTION =
+  "Ethan Jagoda: full stack engineer and adventurer living in NYC. Choose your character and explore Ethan's portfolio: the adventurer, the engineer, the artist and the misc dude.";
+
+// schema.org Person, in the HTML the server sends. Words taken from the site.
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Ethan Jagoda",
+  url: "https://www.ethanjagoda.me/",
+  description: "Full stack engineer and adventurer living in NYC.",
+  sameAs: [
+    "https://www.linkedin.com/in/ethan-jagoda/",
+    "https://github.com/ethanjags",
+    "https://x.com/ethanjagoda",
+    "https://instagram.com/ethan_jags",
+    "https://medium.com/@ethanjags1",
+  ],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Ethan's Portfolio",
-  description: "Choose your character and explore Ethan's portfolio",
+  description: AGENT_DESCRIPTION,
   icons: {
     icon: "/favicon.ico",
   },
@@ -93,6 +114,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" style={{ colorScheme: "light" }}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${londrinaSolid.variable} ${caveat.variable} ${patrickHand.variable} antialiased`}
       >

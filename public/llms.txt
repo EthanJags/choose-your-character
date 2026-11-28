@@ -1,0 +1,50 @@
+# Ethan Jagoda
+
+> Full stack engineer and adventurer living in NYC. At work, obsessed with learning new things and creating products, with a broad slew of experience building 0 to 1. Outside of work, loves building community and trying new things: rabbit-holing on the latest hobby, or hosting events to bring people together.
+
+Site: https://www.ethanjagoda.me/
+The site is a "Select your Ethan" game with four characters: the adventurer, the engineer, the artist and the misc dude.
+
+## Engineer
+
+- [Scribble AI](https://www.ethanjagoda.me/project/engineer/scribble-ai): Bridging the accessibility gap in generative AI. 20,000+ downloads, 800,000+ pieces of content generated, #4 Product of the Day on Product Hunt, $15,000 in grants awarded. Admitted to Berkeley SkyDeck Pad-13 (Batch 16). App: https://apps.apple.com/us/app/scribble-ai/id1662081018
+- [Access AI](https://tryaccessai.com): Autonomously browses like a visually impaired user, identifies accessibility violations, and exports findings to Linear. Best use of TinyFish and Yutori in Creative Corner hackathon.
+- [Science of Everything](https://thescienceofeverything.vercel.app/): Full production site for a paid contract.
+- [Interview AI](https://dontbombtheinterview.vercel.app): AI-powered mock interview practice platform. 35+ users, spread through word of mouth.
+- [Sound Search](https://sound-search.vercel.app): Search for sounds using AI-powered similarity matching. 50+ users, spread through Berkeley clubs.
+- [Beat the Market](https://beatthemarket.xyz/): Prediction market betting game.
+- [Sketchy Business](https://sketchybusiness.vercel.app/): A fast-paced multiplayer drawing and guessing game.
+- [Show and Tell](https://devpost.com/software/show-and-tell-capturing-emotion-in-sign-language): Enabling emotion and expression for the hard of hearing. Treehacks Grand Prize Winner, Most Creative Hack and Best Team.
+- [Enable](https://devpost.com/software/enable-automated-generation-of-prosthetic-devices): Enabling prosthetic development in the comfort of your own home. Audience Choice and Best Use of OpenAI at Scale AI Hackathon.
+- [Tic Tac Tobot](https://www.youtube.com/watch?v=vvE1xocyev0): A robot that physically plays tic tac toe with you using motors and magnets.
+- [Spotter](https://devpost.com/software/spotter-revolutionizing-disaster-relief): Machine learning powered tool for first responders.
+
+## Adventurer
+
+- [Mount Kilimanjaro](https://www.instagram.com/p/DPDJk9MEZPx/): Summiting the tallest peak in Africa, Uhuru Peak at 5,895 meters.
+- [Japan](https://www.instagram.com/p/DFolC-fSof1/): 2 weeks exploring Kyoto and Tokyo. Was on Japanese National Television.
+- [China](https://www.instagram.com/p/DGE3m_4Jwzm/): 2 week solo trip.
+- [Free Diving](https://www.youtube.com/watch?v=re4HLHSIwW8): Dove 70 feet down on a single breath.
+- [Bucket list](https://melodic-mistake-784.notion.site/Bucket-List-6d33ce8d01bd4875be5e7eda05067515): My bucket list of adventures and experiences.
+
+## Artist
+
+- [Tiny Dorm](https://www.instagram.com/c.u.bclub/): Bringing musicians closer together at Berkeley.
+- [Seamonkeys](https://www.instagram.com/the.seamonkeys/): The best high school band.
+
+## Misc dude
+
+- [Freeppekc](https://freeppekc.wixsite.com/freeppekc): Medical non-profit supplying 3D-printed equipment to healthcare workers.
+- [Writings](https://medium.com/@ethanjags1): My essays and thoughts on Medium.
+- [My thoughts on life](https://open.spotify.com/episode/5DDIIZFkrtr5R65uXbHuw8): My podcast episode on The Magnus Effect.
+
+## Contact
+
+Please reach out if you want to chat!
+
+- Email: ethanjagoda@gmail.com
+- LinkedIn: https://www.linkedin.com/in/ethan-jagoda/
+- GitHub: https://github.com/ethanjags
+- X: https://x.com/ethanjagoda
+- Instagram: https://instagram.com/ethan_jags
+- Resume: https://docs.google.com/document/d/e/2PACX-1vSBkuEpmc1mmCw2hdymF5ABr9BavTCbBuKZwFFps5DuCwz0WcAAiHnhndi2-NI3H_u52Nrxk3H9J90y/pub
